@@ -237,7 +237,73 @@ def demo_menu():
 
 
 def run_protected(url):
-    pass
+    console.print()
+    step("Connecting to Cryptology blog...")
+    time.sleep(0.6)
+    step(f"Fetching: {url}")
+    time.sleep(0.4)
+
+    result, status = fetch_402(url)
+    if status == "server_down":
+        console.print(Panel(
+            "Blog server is not running.\n"
+            "Start it with: cd demo/blog/backend && node server.js",
+            style="bold red"
+        ))
+        return
+    if status == "not_402":
+        step(f"Server responded: {result.status_code} (no paywall)", "dim")
+        return
+
+    step("Server responded: 402 Payment Required", "bold red")
+    time.sleep(0.3)
+
+    from doorno402.validators.price import extract_price, validate_price
+    described = extract_price(result["description"]) or 0.0
+    demanded = result["demanded"]
+    inflation = ((demanded - described) / described * 100) if described else 0
+
+    show_payment_table(described, demanded, inflation)
+    time.sleep(0.5)
+
+    step("DoorNo.402 intercepting...", "yellow")
+    time.sleep(0.8)
+
+    validation = validate_price(result["data"])
+
+    if not validation["valid"]:
+        console.print(Panel(
+            validation["reason"],
+            style="bold red"
+        ))
+        time.sleep(0.3)
+
+        before = get_balance()
+        show_balance(before, before, "protected")
+        console.print(Panel(
+            "Payment blocked. Wallet safe.",
+            style="bold green"
+        ))
+
+        step("Writing to blocked_payments.log...", "dim")
+        ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+        log_line = (
+            f"{ts} | {url} | described=${described:.2f} | "
+            f"demanded=${demanded:.2f} | inflation={inflation:.0f}%\n"
+        )
+        with open("blocked_payments.log", "a") as f:
+            f.write(log_line)
+        time.sleep(0.3)
+
+        try:
+            with open("blocked_payments.log") as f:
+                lines = f.readlines()
+                last = lines[-1].strip() if lines else ""
+            console.print(Panel(last, style="dim"))
+        except FileNotFoundError:
+            pass
+    else:
+        step("Payment approved by DoorNo.402 -- price is legitimate", "bold green")
 
 
 def run_side_by_side(url):
