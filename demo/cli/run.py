@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.join(
 ))
 
 import httpx
+import pyfiglet
 from dotenv import load_dotenv
 from eth_account import Account
 from rich.console import Console
@@ -61,75 +62,103 @@ def check_env():
         sys.exit(1)
 
 
+def step(msg, style="bright_yellow", prefix=">"):
+    console.print(f"  [bold {style}]{prefix}[/bold {style}] [white]{msg}[/white]")
+
+
 def show_header():
     os.system("cls" if os.name == "nt" else "clear")
+    
+    # Retro ASCII Art Header
+    ascii_art = pyfiglet.figlet_format("DOORNO.402", font="block")
+    console.print(f"[bold magenta]{ascii_art}[/bold magenta]", end="")
+    
+    console.print("[bold cyan]  x402 Payment Security SDK Demo Environment[/bold cyan]")
+    console.print("  [dim]────────────────────────────────────────────────────────────────────────[/dim]")
+    
     balance = get_balance()
-    short_addr = AGENT_ADDRESS[:6] + "..." + AGENT_ADDRESS[-3:]
-    content = (
-        "[bold white]DoorNo.402[/bold white]\n"
-        "x402 Payment Security SDK\n"
-        "[dim]" + "-" * 49 + "[/dim]\n"
-        f"Wallet: {short_addr}        "
-        f"Balance: [bold cyan]{balance:.2f} USDC[/bold cyan]"
-    )
-    console.print(Panel(content, style="dim white", width=55))
+    short_addr = AGENT_ADDRESS[:6] + "..." + AGENT_ADDRESS[-4:]
+    
+    console.print(f"  [dim white]Wallet connected:[/dim white] [bold bright_yellow]{short_addr}[/bold bright_yellow]")
+    console.print(f"  [dim white]Session balance:[/dim white]  [bold bright_green]{balance:.2f} USDC[/bold bright_green]")
+    console.print("  [dim]────────────────────────────────────────────────────────────────────────[/dim]\n")
 
 
 def show_balance(before, after, mode="unprotected"):
+    console.print()
     table = Table(show_header=False, box=None, padding=(0, 2))
-    table.add_column(style="dim")
+    table.add_column(style="dim white")
     table.add_column(style="bold cyan")
-    table.add_row("Before", f"{before:.2f} USDC")
-    table.add_row("After", f"{after:.2f} USDC")
+    table.add_row("Before Attack", f"{before:.2f} USDC")
+    table.add_row("After Attack", f"{after:.2f} USDC")
     diff = before - after
     if mode == "unprotected":
-        table.add_row("Drained", f"[bold red]${diff:.2f}[/bold red]")
+        table.add_row("Total Drained", f"[bold bright_red]-${diff:.2f}[/bold bright_red]")
     else:
-        table.add_row("Protected", f"[bold green]${diff:.2f} saved[/bold green]")
-    console.print(Panel(table, title="[bold blue]Wallet[/bold blue]", style="dim white"))
-
-
-def step(msg, style="yellow"):
-    console.print(f"  [dim]--[/dim] [{style}]{msg}[/{style}]")
+        table.add_row("Total Saved", f"[bold bright_green]+${diff:.2f}[/bold bright_green]")
+    
+    color = "bright_red" if mode == "unprotected" else "bright_green"
+    console.print(Panel(table, title=f"[bold {color}]Wallet Status[/bold {color}]", style=color, expand=False))
 
 
 def show_payment_table(described, demanded, inflation):
+    console.print()
     table = Table(show_header=False, box=None, padding=(0, 2))
-    table.add_column(style="dim", width=20)
+    table.add_column(style="dim white", width=20)
     table.add_column(style="bold white")
-    table.add_row("Description says", f"${described:.2f}")
-    table.add_row("Protocol demands", f"[bold red]${demanded:.2f}[/bold red]")
-    table.add_row("Inflation", f"[bold red]{inflation:,.0f}%[/bold red]")
-    table.add_row("Threshold", "5%")
+    table.add_row("Description says", f"[bold bright_green]${described:.2f}[/bold bright_green]")
+    table.add_row("Protocol demands", f"[bold bright_red]${demanded:.2f}[/bold bright_red]")
+    table.add_row("Inflation Rate", f"[bold bright_red]{inflation:,.0f}%[/bold bright_red]")
+    table.add_row("Security Threshold", "5%")
     console.print(Panel(
         table,
-        title="[bold blue]Payment Analysis[/bold blue]",
-        style="dim white"
+        title="[bold magenta]x402 Payment Intercepted[/bold magenta]",
+        style="magenta",
+        expand=False
     ))
-
 
 
 def main_menu():
     while True:
+        show_header()
+        console.print("  [bold cyan]Select an environment to simulate:[/bold cyan]")
+        console.print("  [bold magenta]1.[/bold magenta] [bold white]Standard AI Agent[/bold white]         [dim](Vulnerable, no SDK installed)[/dim]")
+        console.print("  [bold magenta]2.[/bold magenta] [bold white]Secure Agent[/bold white]              [dim](Powered by DoorNo.402 SDK)[/dim]")
+        console.print("  [bold magenta]3.[/bold magenta] [bold white]Live Attack Comparison[/bold white]    [dim](Run both side-by-side)[/dim]")
+        console.print("  [bold magenta]4.[/bold magenta] [bold white]Wild URL Testing[/bold white]          [dim](Test custom URLs with SDK)[/dim]")
+        console.print("  [bold magenta]5.[/bold magenta] [bold white]Find x402 Sites[/bold white]           [dim](Search the web for real endpoints)[/dim]")
+        console.print("  [dim]q. Shutdown system[/dim]")
         console.print()
-        console.print("[bold blue]  Select an option:[/bold blue]")
-        console.print("  [1] Demo Mode       -- attack demo against Cryptology blog")
-        console.print("  [2] Custom URL      -- give the agent any URL to fetch")
-        console.print("  [3] Find x402 Sites -- search for x402-enabled services")
-        console.print("  [dim][q] Quit[/dim]")
-        console.print()
-        choice = console.input("[dim]>[/dim] ").strip().lower()
+        
+        choice = console.input("  [bold magenta]>[/bold magenta] ").strip().lower()
+        url = f"{BLOG_URL}/api/articles/bitcoin-etf-analysis"
+        
         if choice == "1":
-            demo_menu()
+            run_unprotected(url)
+            pause()
         elif choice == "2":
-            run_custom()
+            run_protected(url)
+            pause()
         elif choice == "3":
+            run_side_by_side(url)
+            pause()
+        elif choice == "4":
+            run_custom()
+            pause()
+        elif choice == "5":
             run_search()
+            pause()
         elif choice == "q":
-            console.print("[dim]bye[/dim]")
+            console.print("\n  [dim]Shutting down environment...[/dim]")
             break
         else:
-            console.print("[bold red]invalid option[/bold red]")
+            console.print("  [bold red]Invalid selection.[/bold red]")
+            time.sleep(1)
+
+
+def pause():
+    console.print()
+    console.input("  [dim]Press Enter to return to menu...[/dim]")
 
 
 def fetch_402(url):
@@ -153,24 +182,25 @@ def fetch_402(url):
 
 def run_unprotected(url):
     console.print()
-    step("Connecting to Cryptology blog...")
+    step("Initializing standard agent...")
     time.sleep(0.6)
-    step(f"Fetching: {url}")
+    step(f"Requesting resource: [cyan]{url}[/cyan]")
     time.sleep(0.4)
 
     result, status = fetch_402(url)
     if status == "server_down":
         console.print(Panel(
-            "Blog server is not running.\n"
-            "Start it with: cd demo/blog/backend && node server.js",
-            style="bold red"
+            "Target server unreachable.\n"
+            "Ensure blog backend is running: cd demo/blog/backend && node server.js",
+            style="bold bright_red",
+            expand=False
         ))
         return
     if status == "not_402":
-        step(f"Server responded: {result.status_code} (no paywall)", "dim")
+        step(f"Server responded: HTTP {result.status_code} (no paywall)", "dim white", "*")
         return
 
-    step("Server responded: 402 Payment Required", "bold red")
+    step("Server responded: HTTP 402 Payment Required", "bright_red", "!")
     time.sleep(0.3)
 
     from doorno402.validators.price import extract_price
@@ -180,8 +210,14 @@ def run_unprotected(url):
 
     show_payment_table(described, demanded, inflation)
     time.sleep(0.5)
+    
+    console.print()
+    step("Agent parsing description...", "bright_cyan")
+    step(f"Agent identified price: ${described:.2f}", "bright_cyan")
+    step("Agent executing protocol payment...", "bright_cyan")
+    time.sleep(0.8)
 
-    step("Signing transaction...", "yellow")
+    step("Signing Ethereum transaction...", "bright_yellow")
     time.sleep(0.8)
 
     account = Account.from_key(PRIVATE_KEY)
@@ -198,65 +234,43 @@ def run_unprotected(url):
     tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
     receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
 
-    step("Transaction sent", "bold green" if receipt.status else "bold red")
-    console.print(f"    [dim cyan]{tx_hash.hex()}[/dim cyan]")
+    step("Transaction confirmed on Base Sepolia", "bright_green" if receipt.status else "bright_red", "✓")
+    console.print(f"    [dim cyan]Tx Hash: {tx_hash.hex()}[/dim cyan]")
     link = f"https://sepolia.basescan.org/tx/{tx_hash.hex()}"
-    console.print(f"    [dim]{link}[/dim]")
+    console.print(f"    [dim white]View on Explorer: [underline]{link}[/underline][/dim white]")
     time.sleep(0.3)
 
     after = get_balance()
     before = after + demanded
     show_balance(before, after, "unprotected")
     console.print(Panel(
-        "Agent was robbed. No validation was done.",
-        style="bold red"
+        "CRITICAL FAILURE: Agent fell victim to x402 price inflation exploit.",
+        style="bold bright_red",
+        expand=False
     ))
-
-
-def demo_menu():
-    while True:
-        console.print()
-        console.print("[bold blue]  Demo Mode:[/bold blue]")
-        console.print("  [1] Unprotected  -- agent pays the fraudulent amount")
-        console.print("  [2] Protected    -- DoorNo.402 blocks the payment")
-        console.print("  [3] Side by side -- run both sequentially")
-        console.print("  [dim][b] Back[/dim]")
-        console.print()
-        c = console.input("[dim]>[/dim] ").strip().lower()
-        url = f"{BLOG_URL}/api/articles/bitcoin-etf-analysis"
-        if c == "1":
-            run_unprotected(url)
-        elif c == "2":
-            run_protected(url)
-        elif c == "3":
-            run_side_by_side(url)
-        elif c == "b":
-            break
-        again = console.input("\n  Run again? [dim][y/n][/dim] ").strip().lower()
-        if again != "y":
-            break
 
 
 def run_protected(url):
     console.print()
-    step("Connecting to Cryptology blog...")
+    step("Initializing secure agent [DoorNo.402 SDK loaded]...")
     time.sleep(0.6)
-    step(f"Fetching: {url}")
+    step(f"Requesting resource: [cyan]{url}[/cyan]")
     time.sleep(0.4)
 
     result, status = fetch_402(url)
     if status == "server_down":
         console.print(Panel(
-            "Blog server is not running.\n"
-            "Start it with: cd demo/blog/backend && node server.js",
-            style="bold red"
+            "Target server unreachable.\n"
+            "Ensure blog backend is running: cd demo/blog/backend && node server.js",
+            style="bold bright_red",
+            expand=False
         ))
         return
     if status == "not_402":
-        step(f"Server responded: {result.status_code} (no paywall)", "dim")
+        step(f"Server responded: HTTP {result.status_code} (no paywall)", "dim white", "*")
         return
 
-    step("Server responded: 402 Payment Required", "bold red")
+    step("Server responded: HTTP 402 Payment Required", "bright_red", "!")
     time.sleep(0.3)
 
     from doorno402.validators.price import extract_price, validate_price
@@ -267,26 +281,30 @@ def run_protected(url):
     show_payment_table(described, demanded, inflation)
     time.sleep(0.5)
 
-    step("DoorNo.402 intercepting...", "yellow")
+    console.print()
+    step("DoorNo.402 intercepting protocol execution...", "bright_magenta", "⚡")
     time.sleep(0.8)
 
     validation = validate_price(result["data"])
 
     if not validation["valid"]:
-        console.print(Panel(
+        console.print("  " + Panel(
             validation["reason"],
-            style="bold red"
+            style="bold bright_red",
+            expand=False
         ))
         time.sleep(0.3)
 
         before = get_balance()
         show_balance(before, before, "protected")
         console.print(Panel(
-            "Payment blocked. Wallet safe.",
-            style="bold green"
+            "THREAT NEUTRALIZED: DoorNo.402 successfully blocked fraudulent transaction.",
+            style="bold bright_green",
+            expand=False
         ))
 
-        step("Writing to blocked_payments.log...", "dim")
+        console.print()
+        step("Appending forensic data to blocked_payments.log...", "dim white", "»")
         ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00")
         log_line = (
             f"{ts} | {url} | described=${described:.2f} | "
@@ -300,63 +318,62 @@ def run_protected(url):
             with open("blocked_payments.log") as f:
                 lines = f.readlines()
                 last = lines[-1].strip() if lines else ""
-            console.print(Panel(last, style="dim"))
+            console.print("  " + Panel(last, style="dim white", expand=False))
         except FileNotFoundError:
             pass
     else:
-        step("Payment approved by DoorNo.402 -- price is legitimate", "bold green")
+        step("Payment approved by DoorNo.402 -- price is legitimate", "bright_green", "✓")
 
 
 def run_side_by_side(url):
     console.print()
-    console.rule("[bold red]Without DoorNo.402[/bold red]", style="dim")
+    console.print("  [bold bright_red]========================================================================[/bold bright_red]")
+    console.print("  [bold bright_red]                      WITHOUT DOORNO.402 SDK                            [/bold bright_red]")
+    console.print("  [bold bright_red]========================================================================[/bold bright_red]")
     run_unprotected(url)
     console.print()
-    console.rule("[bold green]With DoorNo.402[/bold green]", style="dim")
+    console.print()
+    console.print("  [bold bright_green]========================================================================[/bold bright_green]")
+    console.print("  [bold bright_green]                        WITH DOORNO.402 SDK                             [/bold bright_green]")
+    console.print("  [bold bright_green]========================================================================[/bold bright_green]")
     run_protected(url)
 
 
 def run_custom():
     console.print()
-    url = console.input("  [bold blue]Enter URL to fetch:[/bold blue] ").strip()
+    url = console.input("  [bold cyan]Enter URL to fetch:[/bold cyan] ").strip()
     if not url:
         return
-
-    protected = console.input(
-        "  Run with DoorNo.402 protection? [dim][y/n][/dim] "
-    ).strip().lower() == "y"
-
+        
     console.print()
-    step(f"Fetching: {url}")
+    step(f"Testing wild URL: [cyan]{url}[/cyan]")
     time.sleep(0.4)
 
     result, status = fetch_402(url)
     if status == "server_down":
-        console.print(Panel("Connection failed.", style="bold red"))
+        console.print(Panel("Connection failed. Server might be down or invalid.", style="bold bright_red", expand=False))
         return
 
     if status == "not_402":
         code = result.status_code
-        step(f"Server responded: {code}", "dim")
+        step(f"Server responded: HTTP {code}", "dim white", "*")
         if code == 200:
             body = result.text[:500]
-            console.print(Panel(body, title="[bold blue]Response[/bold blue]", style="dim white"))
+            console.print(Panel(body, title="[bold cyan]Response Preview[/bold cyan]", style="dim white", expand=False))
         else:
-            console.print(Panel(f"HTTP {code}", style="yellow"))
+            console.print(Panel(f"HTTP {code}", style="bright_yellow", expand=False))
         return
 
-    step("Server responded: 402 Payment Required", "bold red")
+    step("HTTP 402 Payment Required detected!", "bold bright_green", "✓")
     time.sleep(0.3)
-
-    if protected:
-        run_protected(url)
-    else:
-        run_unprotected(url)
+    
+    # Force the secure agent flow for wild URLs to show off the SDK
+    run_protected(url)
 
 
 def run_search():
     console.print()
-    step("Searching for x402-enabled services...", "yellow")
+    step("Scanning the internet for x402-enabled endpoints...", "bright_magenta", "⚡")
 
     try:
         from duckduckgo_search import DDGS
@@ -364,7 +381,8 @@ def run_search():
         console.print(Panel(
             "duckduckgo-search not installed.\n"
             "pip install duckduckgo-search",
-            style="bold red"
+            style="bold bright_red",
+            expand=False
         ))
         return
 
@@ -390,9 +408,9 @@ def run_search():
                 if len(urls) >= 5:
                     break
     except Exception as e:
-        console.print(Panel(f"Search failed: {e}", style="yellow"))
+        console.print(Panel(f"Search failed: {e}", style="bright_yellow", expand=False))
         fallback = console.input(
-            "  Enter a URL manually instead: "
+            "  [bold cyan]Enter a URL manually instead:[/bold cyan] "
         ).strip()
         if fallback:
             run_custom_url(fallback)
@@ -401,66 +419,48 @@ def run_search():
     if not urls:
         console.print(Panel(
             "No x402 sites found in search.\n"
-            "Try Option 2 to test a specific URL.",
-            style="yellow"
+            "Try Option 4 to test a specific URL.",
+            style="bright_yellow",
+            expand=False
         ))
         return
 
-    table = Table(show_header=True, style="dim white")
-    table.add_column("#", style="bold")
-    table.add_column("URL", style="cyan", max_width=50)
-    table.add_column("Title", style="dim")
+    console.print()
+    table = Table(show_header=True, style="dim white", box=None)
+    table.add_column("#", style="bold magenta")
+    table.add_column("URL", style="bright_cyan", max_width=50)
+    table.add_column("Title", style="dim white")
     for i, (href, title) in enumerate(urls, 1):
         table.add_row(str(i), href[:50], title[:40])
     console.print(table)
 
     console.print()
     pick = console.input(
-        "  Select a site to test [dim][1-5][/dim] or [dim][b] back[/dim]: "
+        "  [bold cyan]Select a site to test with Secure Agent[/bold cyan] [dim][1-5][/dim] or [dim][b] back[/dim]: "
     ).strip().lower()
     if pick == "b" or not pick.isdigit():
         return
     idx = int(pick) - 1
     if idx < 0 or idx >= len(urls):
-        console.print("[bold red]invalid selection[/bold red]")
+        console.print("  [bold bright_red]Invalid selection.[/bold bright_red]")
         return
 
     target = urls[idx][0]
-    step(f"Testing: {target}")
-    time.sleep(0.4)
-
-    result, status = fetch_402(target)
-    if status == "server_down":
-        console.print(Panel("Connection failed.", style="bold red"))
-        return
-    if status == "not_402":
-        code = result.status_code
-        step(f"No x402 paywall -- got HTTP {code}", "dim")
-        body = result.text[:500]
-        console.print(Panel(body, title="[bold blue]Response[/bold blue]", style="dim white"))
-        return
-
-    step("x402 paywall detected!", "bold green")
-    protected = console.input(
-        "  Run with DoorNo.402 protection? [dim][y/n][/dim] "
-    ).strip().lower() == "y"
-    if protected:
-        run_protected(target)
-    else:
-        run_unprotected(target)
+    console.print()
+    run_custom_url(target)
 
 
 def run_custom_url(url):
-    step(f"Fetching: {url}")
+    step(f"Probing: [cyan]{url}[/cyan]")
     result, status = fetch_402(url)
     if status == "server_down":
-        console.print(Panel("Connection failed.", style="bold red"))
+        console.print(Panel("Connection failed.", style="bold bright_red", expand=False))
         return
     if status == "not_402":
-        step(f"HTTP {result.status_code}", "dim")
-        console.print(Panel(result.text[:500], style="dim white"))
+        step(f"HTTP {result.status_code}", "dim white", "*")
+        console.print(Panel(result.text[:500], style="dim white", expand=False))
         return
-    step("x402 paywall detected!", "bold green")
+    step("x402 paywall detected!", "bold bright_green", "✓")
     run_protected(url)
 
 
@@ -468,4 +468,3 @@ if __name__ == "__main__":
     check_env()
     show_header()
     main_menu()
-
