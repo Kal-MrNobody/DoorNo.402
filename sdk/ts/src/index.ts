@@ -1,40 +1,169 @@
-import { writeFileSync, appendFileSync } from "fs";
-import { validatePrice, ValidationResult } from "./validators/price";
+/**
+ * DoorNo.402 — unified x402 payment security SDK.
+ *
+ * Covers:
+ *   VULN-01: Price inflation check
+ *   VULN-02: ENS recipient trust scoring
+ *   VULN-04: Prompt injection scan + sanitize
+ *   VULN-05: Daily budget enforcement
+ */
 
-export { extractPrice, validatePrice, ValidationResult } from "./validators/price";
+import { appendFileSync } from "fs";
+import { validatePrice, ValidationResult } from "./validators/price";
+import { calculateTrustScore } from "./validators/ens";
+import { validateInjection } from "./validators/injection";
+import { BudgetTracker } from "./validators/budget";
+
+import type { TrustScore, BudgetStatus } from "./types";
+
+// Re-exports
+export { extractPrice, validatePrice } from "./validators/price";
+export type { ValidationResult } from "./validators/price";
+export { calculateTrustScore } from "./validators/ens";
+export { scanInjection, validateInjection } from "./validators/injection";
+export { BudgetTracker } from "./validators/budget";
+export type { TrustScore, InjectionResult, BudgetStatus } from "./types";
 
 export class PaymentBlockedError extends Error {
-  constructor(public result: ValidationResult) {
-    super(result.reason);
+  constructor(public result: Record<string, unknown>) {
+    super(String(result.reason || "payment blocked"));
     this.name = "PaymentBlockedError";
   }
 }
 
-function logBlocked(url: string, result: ValidationResult): void {
+function logBlocked(url: string, reason: string): void {
   const ts = new Date().toISOString();
-  const line =
-    `${ts} | ${url} | ` +
-    `described=$${result.described?.toFixed(2) ?? "?"} | ` +
-    `demanded=$${result.demanded?.toFixed(2) ?? "?"} | ` +
-    `inflation=${Math.round(result.inflationPct ?? 0)}%\n`;
-  appendFileSync("blocked_payments.log", line);
+  const line = `${ts} | ${url} | reason=${reason}\n`;
+  try {
+    appendFileSync("blocked_payments.log", line);
+  } catch {
+    // In browser environments, file writes may not be available
+  }
 }
 
-export function protect(fetchFn: typeof fetch): typeof fetch {
-  return async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-    const resp = await fetchFn(input, init);
+function logFlagged(url: string, trust: TrustScore): void {
+  const ts = new Date().toISOString();
+  const line =
+    `${ts} | ${url} | FLAGGED | ` +
+    `score=${trust.trustScore}/90 | ` +
+    `ens=${trust.ensName || "none"} | ` +
+    `action=${trust.action}\n`;
+  try {
+    appendFileSync("blocked_payments.log", line);
+  } catch {}
+}
 
+function logInjection(url: string, patterns: string[]): void {
+  const ts = new Date().toISOString();
+  const line = `${ts} | ${url} | INJECTION | patterns=${patterns.join(", ")}\n`;
+  try {
+    appendFileSync("blocked_payments.log", line);
+  } catch {}
+}
+
+function convertRawToUsd(raw: number, decimals = 6): number {
+  return raw / 10 ** decimals;
+}
+
+export interface ProtectOptions {
+  dailyBudget?: number;
+  mainnetRpcUrl?: string;
+}
+
+export function protect(
+  fetchFn: typeof fetch,
+  options?: ProtectOptions
+): typeof fetch {
+  const budgetTracker = options?.dailyBudget
+    ? new BudgetTracker(options.dailyBudget)
+    : null;
+  const mainnetRpcUrl = options?.mainnetRpcUrl;
+
+  return async (
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ): Promise<Response> => {
+    const resp = await fetchFn(input, init);
     if (resp.status !== 402) return resp;
 
     const clone = resp.clone();
     const data = await clone.json();
-    const result = validatePrice(data);
+    const url = typeof input === "string" ? input : input.toString();
+    const accepts = (data.accepts as Record<string, unknown>[]) || [];
 
-    if (!result.valid) {
-      const url = typeof input === "string" ? input : input.toString();
-      logBlocked(url, result);
-      console.error(result.reason);
-      throw new PaymentBlockedError(result);
+    if (!accepts.length) return resp;
+
+    const req = accepts[0];
+
+    // ── VULN-01: Price Inflation ──
+    const priceResult = validatePrice(data);
+    if (!priceResult.valid) {
+      logBlocked(url, priceResult.reason);
+      console.error(priceResult.reason);
+      throw new PaymentBlockedError({
+        ...priceResult,
+      });
+    }
+
+    // ── VULN-04: Prompt Injection ──
+    const injectionResult = validateInjection(data);
+    if (injectionResult.injectionDetected) {
+      logInjection(url, injectionResult.patternsMatched || []);
+      console.warn(injectionResult.reason);
+      // Sanitize description in the data
+      (req as Record<string, unknown>).description =
+        injectionResult.sanitizedDescription;
+    }
+
+    // ── VULN-02: ENS Trust Score ──
+    const payTo = String(req.payTo || "");
+    if (payTo) {
+      const trust = await calculateTrustScore(
+        payTo,
+        priceResult.valid,
+        mainnetRpcUrl
+      );
+
+      if (trust.action === "block") {
+        const reason =
+          trust.warning ||
+          `low trust score: ${trust.trustScore}/90`;
+        logBlocked(url, reason);
+        console.error(reason);
+        throw new PaymentBlockedError({
+          valid: false,
+          reason,
+          trustScore: trust,
+        });
+      }
+
+      if (trust.action === "flag") {
+        logFlagged(url, trust);
+        console.warn(`[DoorNo.402] WARNING -- ${trust.warning}`);
+      }
+    }
+
+    // ── VULN-05: Budget Drain ──
+    if (budgetTracker) {
+      const raw = parseInt(String(req.maxAmountRequired || "0"), 10);
+      const demandedUsd = convertRawToUsd(raw);
+      const budgetStatus = budgetTracker.check(demandedUsd);
+
+      if (!budgetStatus.allowed) {
+        logBlocked(url, budgetStatus.reason);
+        console.error(budgetStatus.reason);
+        throw new PaymentBlockedError({
+          valid: false,
+          reason: budgetStatus.reason,
+          budget: budgetStatus,
+        });
+      }
+
+      budgetTracker.record(demandedUsd);
+      console.log(
+        `[DoorNo.402] Budget: $${demandedUsd.toFixed(2)} approved -- ` +
+          `$${budgetTracker.getRemaining().toFixed(2)} remaining today`
+      );
     }
 
     return resp;

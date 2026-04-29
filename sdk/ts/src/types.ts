@@ -21,3 +21,31 @@ export interface McpRequest {
   headers?: Record<string, string>;
   body?: unknown;
 }
+
+export interface TrustScore {
+  payTo: string;
+  ensName: string | null;
+  ensAgeOk: boolean;
+  txCount: number;
+  priceValid: boolean;
+  trustScore: number;
+  warning: string | null;
+  breakdown: Record<string, string>;
+  action: "auto-pay" | "flag" | "block";
+}
+
+export interface InjectionResult {
+  detected: boolean;
+  patternsMatched: string[];
+  original: string;
+  sanitized: string;
+}
+
+export interface BudgetStatus {
+  allowed: boolean;
+  dailyLimit: number;
+  spentToday: number;
+  remaining: number;
+  requested: number;
+  reason: string;
+}
