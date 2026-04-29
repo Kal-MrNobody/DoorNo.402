@@ -1,11 +1,14 @@
 import sys
 import os
+import time
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(__file__), "..", "..", "sdk", "python"
 ))
 
+import httpx
 from dotenv import load_dotenv
+from eth_account import Account
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -129,7 +132,115 @@ def main_menu():
             console.print("[bold red]invalid option[/bold red]")
 
 
+def fetch_402(url):
+    try:
+        resp = httpx.get(url, timeout=10)
+    except httpx.ConnectError:
+        return None, "server_down"
+    if resp.status_code != 402:
+        return resp, "not_402"
+    data = resp.json()
+    req = data["accepts"][0]
+    return {
+        "pay_to": req["payTo"],
+        "raw_amount": int(req["maxAmountRequired"]),
+        "demanded": int(req["maxAmountRequired"]) / 1_000_000,
+        "description": req["description"],
+        "data": data,
+    }, "402"
+
+
+def run_unprotected(url):
+    console.print()
+    step("Connecting to Cryptology blog...")
+    time.sleep(0.6)
+    step(f"Fetching: {url}")
+    time.sleep(0.4)
+
+    result, status = fetch_402(url)
+    if status == "server_down":
+        console.print(Panel(
+            "Blog server is not running.\n"
+            "Start it with: cd demo/blog/backend && node server.js",
+            style="bold red"
+        ))
+        return
+    if status == "not_402":
+        step(f"Server responded: {result.status_code} (no paywall)", "dim")
+        return
+
+    step("Server responded: 402 Payment Required", "bold red")
+    time.sleep(0.3)
+
+    from doorno402.validators.price import extract_price
+    described = extract_price(result["description"]) or 0.0
+    demanded = result["demanded"]
+    inflation = ((demanded - described) / described * 100) if described else 0
+
+    show_payment_table(described, demanded, inflation)
+    time.sleep(0.5)
+
+    step("Signing transaction...", "yellow")
+    time.sleep(0.8)
+
+    account = Account.from_key(PRIVATE_KEY)
+    tx = usdc.functions.transfer(
+        Web3.to_checksum_address(result["pay_to"]), result["raw_amount"]
+    ).build_transaction({
+        "from": Web3.to_checksum_address(AGENT_ADDRESS),
+        "nonce": w3.eth.get_transaction_count(
+            Web3.to_checksum_address(AGENT_ADDRESS)),
+        "gas": 100000,
+        "gasPrice": w3.eth.gas_price,
+    })
+    signed = account.sign_transaction(tx)
+    tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+    receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
+
+    step("Transaction sent", "bold green" if receipt.status else "bold red")
+    console.print(f"    [dim cyan]{tx_hash.hex()}[/dim cyan]")
+    link = f"https://sepolia.basescan.org/tx/{tx_hash.hex()}"
+    console.print(f"    [dim]{link}[/dim]")
+    time.sleep(0.3)
+
+    after = get_balance()
+    before = after + demanded
+    show_balance(before, after, "unprotected")
+    console.print(Panel(
+        "Agent was robbed. No validation was done.",
+        style="bold red"
+    ))
+
+
 def demo_menu():
+    while True:
+        console.print()
+        console.print("[bold blue]  Demo Mode:[/bold blue]")
+        console.print("  [1] Unprotected  -- agent pays the fraudulent amount")
+        console.print("  [2] Protected    -- DoorNo.402 blocks the payment")
+        console.print("  [3] Side by side -- run both sequentially")
+        console.print("  [dim][b] Back[/dim]")
+        console.print()
+        c = console.input("[dim]>[/dim] ").strip().lower()
+        url = f"{BLOG_URL}/api/articles/bitcoin-etf-analysis"
+        if c == "1":
+            run_unprotected(url)
+        elif c == "2":
+            run_protected(url)
+        elif c == "3":
+            run_side_by_side(url)
+        elif c == "b":
+            break
+        again = console.input("\n  Run again? [dim][y/n][/dim] ").strip().lower()
+        if again != "y":
+            break
+
+
+def run_protected(url):
+    pass
+
+
+def run_side_by_side(url):
     pass
 
 
