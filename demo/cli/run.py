@@ -131,16 +131,36 @@ def main_menu():
         console.print()
         
         choice = console.input("  [bold magenta]>[/bold magenta] ").strip().lower()
-        url = f"{BLOG_URL}/api/articles/bitcoin-etf-analysis"
         
-        if choice == "1":
-            run_unprotected(url)
-            pause()
-        elif choice == "2":
-            run_protected(url)
-            pause()
-        elif choice == "3":
-            run_side_by_side(url)
+        if choice in ("1", "2", "3"):
+            console.print()
+            console.print("  [bold cyan]Select Attack Scenario:[/bold cyan]")
+            console.print("  [bold magenta]1.[/bold magenta] [white]Price Inflation[/white]        [dim]($0.01 description, $50.00 demanded)[/dim]")
+            console.print("  [bold magenta]2.[/bold magenta] [white]Unknown Recipient[/white]      [dim](No ENS, fresh wallet)[/dim]")
+            console.print("  [bold magenta]3.[/bold magenta] [white]Prompt Injection[/white]       [dim](Jailbreak description)[/dim]")
+            console.print("  [bold magenta]4.[/bold magenta] [white]Budget Drain[/white]           [dim]($0.09 repeating charges)[/dim]")
+            console.print("  [bold magenta]5.[/bold magenta] [white]Full Combo[/white]             [dim](All attacks at once)[/dim]")
+            console.print("  [bold magenta]6.[/bold magenta] [white]Cryptology Blog[/white]        [dim](Original VULN-01 demo)[/dim]")
+            
+            scen_choice = console.input("  [bold magenta]>[/bold magenta] ").strip()
+            
+            if scen_choice == "1": url = "http://localhost:4000/vuln01"
+            elif scen_choice == "2": url = "http://localhost:4000/vuln02"
+            elif scen_choice == "3": url = "http://localhost:4000/vuln04"
+            elif scen_choice == "4": url = "http://localhost:4000/vuln05"
+            elif scen_choice == "5": url = "http://localhost:4000/combo"
+            elif scen_choice == "6": url = f"{BLOG_URL}/api/articles/bitcoin-etf-analysis"
+            else:
+                console.print("  [bold red]Invalid scenario selection.[/bold red]")
+                time.sleep(1)
+                continue
+
+            if choice == "1":
+                run_unprotected(url)
+            elif choice == "2":
+                run_protected(url)
+            elif choice == "3":
+                run_side_by_side(url)
             pause()
         elif choice == "4":
             run_custom()
@@ -180,6 +200,20 @@ def fetch_402(url):
     }, "402"
 
 
+def _detect_attack_type(url, described, demanded, inflation):
+    """Detect which attack is being demonstrated based on URL and data."""
+    if "/vuln04" in url or "/combo" in url:
+        if "SYSTEM" in str(described) or inflation > 1000:
+            return "injection", "Agent processed a PROMPT INJECTION payload. The jailbreak description tricked the LLM into approving a malicious payment."
+    if "/vuln02" in url:
+        return "unknown_recipient", "Agent paid an UNKNOWN WALLET with no ENS name, no on-chain history. Funds sent to a potentially malicious address."
+    if "/vuln05" in url:
+        return "budget_drain", "Agent fell victim to BUDGET DRAIN. Small repeated charges slowly emptied the wallet without triggering any alarm."
+    if inflation > 5:
+        return "price_inflation", f"Agent fell victim to PRICE INFLATION exploit. Description claimed ${described:.2f} but protocol demanded ${demanded:.2f} ({inflation:,.0f}% inflation)."
+    return "unknown", "Agent processed a potentially malicious x402 payment without any security checks."
+
+
 def run_unprotected(url):
     console.print()
     step("Initializing standard agent...")
@@ -191,7 +225,7 @@ def run_unprotected(url):
     if status == "server_down":
         console.print(Panel(
             "Target server unreachable.\n"
-            "Ensure blog backend is running: cd demo/blog/backend && node server.js",
+            "Ensure attack server is running: node demo/attack-server/server.js",
             style="bold bright_red",
             expand=False
         ))
@@ -217,34 +251,72 @@ def run_unprotected(url):
     step("Agent executing protocol payment...", "bright_cyan")
     time.sleep(0.8)
 
+    # Get real balance BEFORE the transaction
+    before = get_balance()
+
+    # Check if wallet has enough to pay
+    if before < demanded:
+        step(f"Wallet has ${before:.2f} but attack demands ${demanded:.2f}", "bright_red", "!")
+        step("Agent WOULD pay if it had funds -- vulnerability confirmed", "bright_red", "!")
+        time.sleep(0.5)
+
+        # Still send what we can to prove the exploit works
+        actual_raw = int(before * 1_000_000) - 1000  # leave tiny gas buffer
+        if actual_raw <= 0:
+            console.print(Panel(
+                f"Wallet is empty. Cannot demonstrate on-chain drain.\n"
+                f"The attack demanded ${demanded:.2f} -- agent would have paid it all.",
+                style="bold bright_red",
+                expand=False
+            ))
+            attack_type, failure_msg = _detect_attack_type(url, described, demanded, inflation)
+            console.print(Panel(
+                f"CRITICAL FAILURE: {failure_msg}",
+                style="bold bright_red",
+                expand=False
+            ))
+            return
+        transfer_amount = actual_raw
+        step(f"Draining entire wallet: ${actual_raw / 1_000_000:.2f} USDC", "bright_red", "!")
+    else:
+        transfer_amount = result["raw_amount"]
+
     step("Signing Ethereum transaction...", "bright_yellow")
     time.sleep(0.8)
 
-    account = Account.from_key(PRIVATE_KEY)
-    tx = usdc.functions.transfer(
-        Web3.to_checksum_address(result["pay_to"]), result["raw_amount"]
-    ).build_transaction({
-        "from": Web3.to_checksum_address(AGENT_ADDRESS),
-        "nonce": w3.eth.get_transaction_count(
-            Web3.to_checksum_address(AGENT_ADDRESS)),
-        "gas": 100000,
-        "gasPrice": w3.eth.gas_price,
-    })
-    signed = account.sign_transaction(tx)
-    tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
-    receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
+    try:
+        account = Account.from_key(PRIVATE_KEY)
+        tx = usdc.functions.transfer(
+            Web3.to_checksum_address(result["pay_to"]), transfer_amount
+        ).build_transaction({
+            "from": Web3.to_checksum_address(AGENT_ADDRESS),
+            "nonce": w3.eth.get_transaction_count(
+                Web3.to_checksum_address(AGENT_ADDRESS)),
+            "gas": 100000,
+            "gasPrice": w3.eth.gas_price,
+        })
+        signed = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
 
-    step("Transaction confirmed on Base Sepolia", "bright_green" if receipt.status else "bright_red", "✓")
-    console.print(f"    [dim cyan]Tx Hash: {tx_hash.hex()}[/dim cyan]")
-    link = f"https://sepolia.basescan.org/tx/{tx_hash.hex()}"
-    console.print(f"    [dim white]View on Explorer: [underline]{link}[/underline][/dim white]")
+        if receipt.status:
+            step("Transaction confirmed on Base Sepolia", "bright_green", "✓")
+        else:
+            step("Transaction reverted on-chain", "bright_red", "✗")
+        console.print(f"    [dim cyan]Tx Hash: {tx_hash.hex()}[/dim cyan]")
+        link = f"https://sepolia.basescan.org/tx/{tx_hash.hex()}"
+        console.print(f"    [dim white]View on Explorer: [underline]{link}[/underline][/dim white]")
+    except Exception as e:
+        step(f"Transaction failed: {e}", "bright_red", "✗")
+
     time.sleep(0.3)
 
     after = get_balance()
-    before = after + demanded
     show_balance(before, after, "unprotected")
+
+    attack_type, failure_msg = _detect_attack_type(url, described, demanded, inflation)
     console.print(Panel(
-        "CRITICAL FAILURE: Agent fell victim to x402 price inflation exploit.",
+        f"CRITICAL FAILURE: {failure_msg}",
         style="bold bright_red",
         expand=False
     ))
@@ -252,7 +324,7 @@ def run_unprotected(url):
 
 def run_protected(url):
     console.print()
-    step("Initializing secure agent [DoorNo.402 SDK loaded]...")
+    step("Initializing secure agent [DoorNo.402 SDK loaded]...", "bright_magenta")
     time.sleep(0.6)
     step(f"Requesting resource: [cyan]{url}[/cyan]")
     time.sleep(0.4)
@@ -261,7 +333,7 @@ def run_protected(url):
     if status == "server_down":
         console.print(Panel(
             "Target server unreachable.\n"
-            "Ensure blog backend is running: cd demo/blog/backend && node server.js",
+            "Ensure attack server is running: node demo/attack-server/server.js",
             style="bold bright_red",
             expand=False
         ))
@@ -274,6 +346,11 @@ def run_protected(url):
     time.sleep(0.3)
 
     from doorno402.validators.price import extract_price, validate_price
+    from doorno402.validators.injection import validate_injection
+    from doorno402.validators.ens_verifier import calculate_trust_score
+    from doorno402.validators.budget import BudgetTracker
+    from rich.padding import Padding
+
     described = extract_price(result["description"]) or 0.0
     demanded = result["demanded"]
     inflation = ((demanded - described) / described * 100) if described else 0
@@ -282,48 +359,145 @@ def run_protected(url):
     time.sleep(0.5)
 
     console.print()
-    step("DoorNo.402 intercepting protocol execution...", "bright_magenta", "⚡")
+    step("⚡ DoorNo.402 intercepting protocol execution...", "bright_magenta")
     time.sleep(0.8)
 
-    validation = validate_price(result["data"])
+    blocked = False
+    checks_passed = 0
 
-    if not validation["valid"]:
-        from rich.padding import Padding
+    # ── CHECK 1: Prompt Injection ──
+    step("Scanning description for prompt injection...", "bright_cyan", "1")
+    time.sleep(0.4)
+    inj_result = validate_injection(result["data"])
+    if inj_result.get("injection_detected"):
+        patterns = ", ".join(inj_result.get("patterns_matched", []))
         console.print(Padding(Panel(
-            validation["reason"],
+            f"[bold]INJECTION DETECTED[/bold]\n"
+            f"Patterns: {patterns}\n"
+            f"Action: Description sanitized before LLM processing",
+            style="bold bright_yellow",
+            expand=False
+        ), (0, 0, 0, 4)))
+        step("Malicious payload stripped from description", "bright_yellow", "⚠")
+    else:
+        step("No injection detected ✓", "bright_green", "✓")
+    checks_passed += 1
+    time.sleep(0.3)
+
+    # ── CHECK 2: Price Inflation ──
+    step("Validating price integrity...", "bright_cyan", "2")
+    time.sleep(0.4)
+    price_result = validate_price(result["data"])
+    if not price_result["valid"]:
+        console.print(Padding(Panel(
+            f"[bold]PRICE INFLATION BLOCKED[/bold]\n"
+            f"{price_result['reason']}",
             style="bold bright_red",
             expand=False
-        ), (0, 0, 0, 2)))
+        ), (0, 0, 0, 4)))
+        step("Payment BLOCKED — price is fraudulent", "bright_red", "✗")
+        blocked = True
+    else:
+        step(f"Price valid — ${described:.2f} matches protocol demand ✓", "bright_green", "✓")
+        checks_passed += 1
+    time.sleep(0.3)
+
+    # ── CHECK 3: ENS Trust Score (only if price passed) ──
+    if not blocked:
+        step("Calculating ENS trust score for recipient...", "bright_cyan", "3")
+        time.sleep(0.4)
+        pay_to = result.get("pay_to", "")
+        trust = calculate_trust_score(
+            pay_to=pay_to,
+            price_valid=price_result["valid"],
+        )
+        score_color = "bright_green" if trust.action == "allow" else (
+            "bright_yellow" if trust.action == "flag" else "bright_red"
+        )
+        breakdown_lines = "\n".join(
+            f"  {k}: {v}" for k, v in trust.breakdown.items()
+        )
+
+        if trust.action == "block":
+            console.print(Padding(Panel(
+                f"[bold]UNTRUSTED RECIPIENT BLOCKED[/bold]\n"
+                f"Score: {trust.trust_score}/90\n"
+                f"ENS: {trust.ens_name or 'NONE'}\n"
+                f"{breakdown_lines}",
+                style="bold bright_red",
+                expand=False
+            ), (0, 0, 0, 4)))
+            step(f"Payment BLOCKED — trust score {trust.trust_score}/90", "bright_red", "✗")
+            blocked = True
+        elif trust.action == "flag":
+            console.print(Padding(Panel(
+                f"[bold]RECIPIENT FLAGGED[/bold]\n"
+                f"Score: {trust.trust_score}/90\n"
+                f"ENS: {trust.ens_name or 'NONE'}\n"
+                f"{breakdown_lines}",
+                style="bold bright_yellow",
+                expand=False
+            ), (0, 0, 0, 4)))
+            step(f"Flagged for review — trust score {trust.trust_score}/90", "bright_yellow", "⚠")
+            checks_passed += 1
+        else:
+            step(f"Recipient trusted — score {trust.trust_score}/90 ✓", "bright_green", "✓")
+            checks_passed += 1
         time.sleep(0.3)
 
-        before = get_balance()
+    # ── CHECK 4: Budget (only if not already blocked) ──
+    if not blocked:
+        step("Checking daily budget...", "bright_cyan", "4")
+        time.sleep(0.4)
+        tracker = BudgetTracker(daily_limit=5.00)
+        budget_status = tracker.check(demanded)
+        if not budget_status.allowed:
+            console.print(Padding(Panel(
+                f"[bold]BUDGET LIMIT EXCEEDED[/bold]\n"
+                f"{budget_status.reason}",
+                style="bold bright_red",
+                expand=False
+            ), (0, 0, 0, 4)))
+            step("Payment BLOCKED — would exceed daily budget", "bright_red", "✗")
+            blocked = True
+        else:
+            step(f"Budget OK — ${demanded:.2f} within $5.00 daily limit ✓", "bright_green", "✓")
+            checks_passed += 1
+        time.sleep(0.3)
+
+    # ── Summary ──
+    console.print()
+    before = get_balance()
+
+    if blocked:
         show_balance(before, before, "protected")
         console.print(Panel(
-            "THREAT NEUTRALIZED: DoorNo.402 successfully blocked fraudulent transaction.",
+            f"THREAT NEUTRALIZED: DoorNo.402 blocked this attack. ${demanded:.2f} saved.",
             style="bold bright_green",
             expand=False
         ))
-
-        console.print()
-        step("Appending forensic data to blocked_payments.log...", "dim white", "»")
-        ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00")
-        log_line = (
-            f"{ts} | {url} | described=${described:.2f} | "
-            f"demanded=${demanded:.2f} | inflation={inflation:.0f}%\n"
-        )
-        with open("blocked_payments.log", "a") as f:
-            f.write(log_line)
-        time.sleep(0.3)
-
-        try:
-            with open("blocked_payments.log") as f:
-                lines = f.readlines()
-                last = lines[-1].strip() if lines else ""
-            console.print(Padding(Panel(last, style="dim white", expand=False), (0, 0, 0, 2)))
-        except FileNotFoundError:
-            pass
     else:
-        step("Payment approved by DoorNo.402 -- price is legitimate", "bright_green", "✓")
+        show_balance(before, before, "protected")
+        step("All 4 security checks passed — payment would proceed", "bright_green", "✓")
+
+    console.print()
+    step("Appending forensic data to blocked_payments.log...", "dim white", "»")
+    ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    log_line = (
+        f"{ts} | {url} | described=${described:.2f} | "
+        f"demanded=${demanded:.2f} | blocked={blocked}\n"
+    )
+    with open("blocked_payments.log", "a") as f:
+        f.write(log_line)
+    time.sleep(0.3)
+
+    try:
+        with open("blocked_payments.log") as f:
+            lines = f.readlines()
+            last = lines[-1].strip() if lines else ""
+        console.print(Padding(Panel(last, style="dim white", expand=False), (0, 0, 0, 2)))
+    except FileNotFoundError:
+        pass
 
 
 def run_side_by_side(url):
