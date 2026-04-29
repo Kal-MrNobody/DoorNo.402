@@ -354,7 +354,113 @@ def run_custom():
 
 
 def run_search():
-    pass
+    console.print()
+    step("Searching for x402-enabled services...", "yellow")
+
+    try:
+        from duckduckgo_search import DDGS
+    except ImportError:
+        console.print(Panel(
+            "duckduckgo-search not installed.\n"
+            "pip install duckduckgo-search",
+            style="bold red"
+        ))
+        return
+
+    skip = ["github.com", "docs.", "medium.com", "blog.", "arxiv.org"]
+    urls = []
+
+    try:
+        with DDGS() as ddgs:
+            queries = [
+                "x402 payment protocol site",
+                "x402 HTTP payment AI agent",
+            ]
+            for q in queries:
+                for r in ddgs.text(q, max_results=10):
+                    href = r.get("href", "")
+                    title = r.get("title", "")
+                    if any(s in href.lower() for s in skip):
+                        continue
+                    if href not in [u[0] for u in urls]:
+                        urls.append((href, title))
+                    if len(urls) >= 5:
+                        break
+                if len(urls) >= 5:
+                    break
+    except Exception as e:
+        console.print(Panel(f"Search failed: {e}", style="yellow"))
+        fallback = console.input(
+            "  Enter a URL manually instead: "
+        ).strip()
+        if fallback:
+            run_custom_url(fallback)
+        return
+
+    if not urls:
+        console.print(Panel(
+            "No x402 sites found in search.\n"
+            "Try Option 2 to test a specific URL.",
+            style="yellow"
+        ))
+        return
+
+    table = Table(show_header=True, style="dim white")
+    table.add_column("#", style="bold")
+    table.add_column("URL", style="cyan", max_width=50)
+    table.add_column("Title", style="dim")
+    for i, (href, title) in enumerate(urls, 1):
+        table.add_row(str(i), href[:50], title[:40])
+    console.print(table)
+
+    console.print()
+    pick = console.input(
+        "  Select a site to test [dim][1-5][/dim] or [dim][b] back[/dim]: "
+    ).strip().lower()
+    if pick == "b" or not pick.isdigit():
+        return
+    idx = int(pick) - 1
+    if idx < 0 or idx >= len(urls):
+        console.print("[bold red]invalid selection[/bold red]")
+        return
+
+    target = urls[idx][0]
+    step(f"Testing: {target}")
+    time.sleep(0.4)
+
+    result, status = fetch_402(target)
+    if status == "server_down":
+        console.print(Panel("Connection failed.", style="bold red"))
+        return
+    if status == "not_402":
+        code = result.status_code
+        step(f"No x402 paywall -- got HTTP {code}", "dim")
+        body = result.text[:500]
+        console.print(Panel(body, title="[bold blue]Response[/bold blue]", style="dim white"))
+        return
+
+    step("x402 paywall detected!", "bold green")
+    protected = console.input(
+        "  Run with DoorNo.402 protection? [dim][y/n][/dim] "
+    ).strip().lower() == "y"
+    if protected:
+        run_protected(target)
+    else:
+        run_unprotected(target)
+
+
+def run_custom_url(url):
+    step(f"Fetching: {url}")
+    result, status = fetch_402(url)
+    if status == "server_down":
+        console.print(Panel("Connection failed.", style="bold red"))
+        return
+    if status == "not_402":
+        step(f"HTTP {result.status_code}", "dim")
+        console.print(Panel(result.text[:500], style="dim white"))
+        return
+    step("x402 paywall detected!", "bold green")
+    run_protected(url)
 
 
 if __name__ == "__main__":
