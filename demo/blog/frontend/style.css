@@ -1,0 +1,206 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0f0f0f;
+  color: #e8e8e8;
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+}
+
+a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+header {
+  border-bottom: 1px solid #222;
+  padding: 1rem 0;
+}
+
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-tag {
+  color: #888;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.nav-tag:hover {
+  color: #e8e8e8;
+}
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.hero {
+  margin-bottom: 3rem;
+}
+
+.hero h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.hero p {
+  color: #888;
+  font-size: 1.05rem;
+}
+
+.article-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.article-card {
+  background: #181818;
+  border: 1px solid #252525;
+  border-radius: 8px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.article-card:hover {
+  border-color: #3b82f6;
+}
+
+.article-card h2 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.article-card p {
+  color: #999;
+  font-size: 0.95rem;
+}
+
+.premium-badge {
+  display: inline-block;
+  background: #1e3a5f;
+  color: #60a5fa;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.article-full {
+  position: relative;
+}
+
+.article-full h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.article-full .content {
+  color: #ccc;
+  font-size: 1rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.article-full.blurred .content {
+  filter: blur(6px);
+  user-select: none;
+  pointer-events: none;
+}
+
+.paywall {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.paywall.hidden {
+  display: none;
+}
+
+.paywall-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.paywall-box {
+  position: relative;
+  background: #181818;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2.5rem;
+  text-align: center;
+  max-width: 420px;
+}
+
+.lock-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.paywall-box h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+
+.paywall-price {
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0.75rem 0;
+}
+
+.paywall-note {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.loading {
+  color: #666;
+}
+
+footer {
+  border-top: 1px solid #222;
+  padding: 2rem 0;
+  text-align: center;
+  color: #555;
+  font-size: 0.85rem;
+}
