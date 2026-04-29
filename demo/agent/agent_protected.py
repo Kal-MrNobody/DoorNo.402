@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from eth_account import Account
 from web3 import Web3
 
-# ---- the only difference: import the SDK ----
+# ---- one import, one wrap. that's the whole SDK integration. ----
 from doorno402 import protect, PaymentBlockedError
 
 load_dotenv()
@@ -35,12 +35,6 @@ def get_balance():
     return raw / 1_000_000
 
 
-def validate_402(data):
-    """Run doorno402 validation on the 402 response."""
-    from doorno402.validators.price import validate_price
-    return validate_price(data)
-
-
 async def main():
     print("[agent] mode: PROTECTED by doorno402")
     print(f"[agent] wallet: {AGENT_ADDRESS}")
@@ -49,49 +43,44 @@ async def main():
     print()
 
     async with httpx.AsyncClient() as client:
-        resp = await client.get(f"{BLOG_URL}/api/articles/bitcoin-etf-analysis")
+        # ---- one line. SDK handles everything from here. ----
+        client = protect(client)
 
-        if resp.status_code != 402:
-            print(f"[agent] got {resp.status_code}, expected 402")
-            return
-
-        data = resp.json()
-        req = data["accepts"][0]
-        pay_to = req["payTo"]
-        raw_amount = int(req["maxAmountRequired"])
-        description = req["description"]
-
-        print(f"[agent] 402 received:")
-        print(f"[agent]   description: {description}")
-        print(f"[agent]   payTo: {pay_to}")
-        print(f"[agent]   maxAmountRequired: {raw_amount} ({raw_amount / 1_000_000:.2f} USDC)")
-        print()
-
-        # ---- the SDK does its job here ----
-        result = validate_402(data)
-
-        if not result["valid"]:
-            print(f"[agent] doorno402 says: {result['reason']}")
+        try:
+            resp = await client.get(f"{BLOG_URL}/api/articles/bitcoin-etf-analysis")
+        except PaymentBlockedError as e:
             print()
-            print(f"[agent] BLOCKED. payment was NOT sent.")
+            print(f"[agent] BLOCKED by doorno402. payment was NOT sent.")
             print(f"[agent] balance: {get_balance():.2f} USDC -- unchanged")
             return
 
-        # if validation passed, pay normally
-        print("[agent] doorno402 approved the payment, proceeding...")
-        tx = usdc.functions.transfer(
-            Web3.to_checksum_address(pay_to), raw_amount
-        ).build_transaction({
-            "from": Web3.to_checksum_address(AGENT_ADDRESS),
-            "nonce": w3.eth.get_transaction_count(Web3.to_checksum_address(AGENT_ADDRESS)),
-            "gas": 100000,
-            "gasPrice": w3.eth.gas_price,
-        })
-        signed = account.sign_transaction(tx)
-        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
+        if resp.status_code == 402:
+            # SDK approved the payment -- price matched description
+            data = resp.json()
+            req = data["accepts"][0]
+            pay_to = req["payTo"]
+            raw_amount = int(req["maxAmountRequired"])
 
-        print(f"[agent] payment sent: {tx_hash.hex()}")
+            print(f"[agent] doorno402 approved -- price is legitimate")
+            tx = usdc.functions.transfer(
+                Web3.to_checksum_address(pay_to), raw_amount
+            ).build_transaction({
+                "from": Web3.to_checksum_address(AGENT_ADDRESS),
+                "nonce": w3.eth.get_transaction_count(Web3.to_checksum_address(AGENT_ADDRESS)),
+                "gas": 100000,
+                "gasPrice": w3.eth.gas_price,
+            })
+            signed = account.sign_transaction(tx)
+            tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+            w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
+            print(f"[agent] paid: https://sepolia.basescan.org/tx/{tx_hash.hex()}")
+
+        elif resp.status_code == 200:
+            article = resp.json()
+            print(f"[agent] article: {article.get('title')}")
+            print(f"[agent] content: {article.get('content', '')[:120]}...")
+
+        print()
         print(f"[agent] balance after: {get_balance():.2f} USDC")
 
 
