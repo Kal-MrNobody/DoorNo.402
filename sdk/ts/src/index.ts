@@ -95,16 +95,6 @@ export function protect(
 
     const req = accepts[0];
 
-    // ── VULN-01: Price Inflation ──
-    const priceResult = validatePrice(data);
-    if (!priceResult.valid) {
-      logBlocked(url, priceResult.reason);
-      console.error(priceResult.reason);
-      throw new PaymentBlockedError({
-        ...priceResult,
-      });
-    }
-
     // ── VULN-04: Prompt Injection ──
     const injectionResult = validateInjection(data);
     if (injectionResult.injectionDetected) {
@@ -113,6 +103,16 @@ export function protect(
       // Sanitize description in the data
       (req as Record<string, unknown>).description =
         injectionResult.sanitizedDescription;
+    }
+
+    // ── VULN-01: Price Inflation ──
+    const priceResult = validatePrice(data);
+    if (!priceResult.valid) {
+      logBlocked(url, priceResult.reason);
+      console.error(priceResult.reason);
+      throw new PaymentBlockedError({
+        ...priceResult,
+      });
     }
 
     // ── VULN-02: ENS Trust Score ──

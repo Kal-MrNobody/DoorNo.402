@@ -89,13 +89,6 @@ class _GuardHook:
 
         req = accepts[0]
 
-        # ── VULN-01: Price Inflation ──
-        price_result = validate_price(data)
-        if not price_result["valid"]:
-            _log_blocked(url, price_result)
-            _print_color(price_result["reason"])
-            raise PaymentBlockedError(price_result)
-
         # ── VULN-04: Prompt Injection ──
         injection_result = validate_injection(data)
         if injection_result.get("injection_detected"):
@@ -103,6 +96,13 @@ class _GuardHook:
             _print_color(injection_result["reason"], "yellow")
             # Sanitize description in-place so downstream LLMs see clean text
             req["description"] = injection_result["sanitized_description"]
+
+        # ── VULN-01: Price Inflation ──
+        price_result = validate_price(data)
+        if not price_result["valid"]:
+            _log_blocked(url, price_result)
+            _print_color(price_result["reason"])
+            raise PaymentBlockedError(price_result)
 
         # ── VULN-02: ENS Trust Score ──
         pay_to = req.get("payTo", "")

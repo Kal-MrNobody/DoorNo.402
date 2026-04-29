@@ -69,6 +69,17 @@ export function interceptAndForward(
           (payload.accepts as Record<string, unknown>[]) || [];
         const req = accepts.length ? accepts[0] : null;
 
+        if (req) {
+          // ── VULN-04: Prompt Injection ──
+          const injectionResult = validateInjection(payload);
+          if (injectionResult.injectionDetected) {
+            logInjection(injectionResult.patternsMatched || []);
+            console.warn(injectionResult.reason);
+            (req as Record<string, unknown>).description =
+              injectionResult.sanitizedDescription;
+          }
+        }
+
         // ── VULN-01: Price Inflation ──
         const priceResult = validatePrice(payload);
         if (!priceResult.valid) {
@@ -81,14 +92,6 @@ export function interceptAndForward(
         }
 
         if (req) {
-          // ── VULN-04: Prompt Injection ──
-          const injectionResult = validateInjection(payload);
-          if (injectionResult.injectionDetected) {
-            logInjection(injectionResult.patternsMatched || []);
-            console.warn(injectionResult.reason);
-            (req as Record<string, unknown>).description =
-              injectionResult.sanitizedDescription;
-          }
 
           // ── VULN-02: ENS Trust Score ──
           const payTo = String(req.payTo || "");
