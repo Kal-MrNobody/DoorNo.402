@@ -252,66 +252,54 @@ def run_unprotected(url):
     time.sleep(0.8)
 
     # Get real balance BEFORE the transaction
-    before = get_balance()
+    real_before = get_balance()
+    is_simulated = False
+    before = real_before
 
-    # Check if wallet has enough to pay
+    # Check if wallet has enough to pay, if not, enter simulation mode
     if before < demanded:
-        step(f"Wallet has ${before:.2f} but attack demands ${demanded:.2f}", "bright_red", "!")
-        step("Agent WOULD pay if it had funds -- vulnerability confirmed", "bright_red", "!")
+        step(f"Wallet balance (${before:.2f}) is insufficient. Entering DEMO SIMULATION MODE...", "bright_magenta", "⚡")
         time.sleep(0.5)
-
-        # Still send what we can to prove the exploit works
-        actual_raw = int(before * 1_000_000) - 1000  # leave tiny gas buffer
-        if actual_raw <= 0:
-            console.print(Panel(
-                f"Wallet is empty. Cannot demonstrate on-chain drain.\n"
-                f"The attack demanded ${demanded:.2f} -- agent would have paid it all.",
-                style="bold bright_red",
-                expand=False
-            ))
-            attack_type, failure_msg = _detect_attack_type(url, described, demanded, inflation)
-            console.print(Panel(
-                f"CRITICAL FAILURE: {failure_msg}",
-                style="bold bright_red",
-                expand=False
-            ))
-            return
-        transfer_amount = actual_raw
-        step(f"Draining entire wallet: ${actual_raw / 1_000_000:.2f} USDC", "bright_red", "!")
+        before = 1000.00  # Give them a fake $1000 for the demo
+        is_simulated = True
+        transfer_amount = int(demanded * 1_000_000)
     else:
         transfer_amount = result["raw_amount"]
 
     step("Signing Ethereum transaction...", "bright_yellow")
     time.sleep(0.8)
 
-    try:
-        account = Account.from_key(PRIVATE_KEY)
-        tx = usdc.functions.transfer(
-            Web3.to_checksum_address(result["pay_to"]), transfer_amount
-        ).build_transaction({
-            "from": Web3.to_checksum_address(AGENT_ADDRESS),
-            "nonce": w3.eth.get_transaction_count(
-                Web3.to_checksum_address(AGENT_ADDRESS)),
-            "gas": 100000,
-            "gasPrice": w3.eth.gas_price,
-        })
-        signed = account.sign_transaction(tx)
-        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
+    if is_simulated:
+        step("Transaction simulated on Base Sepolia (Demo Mode)", "bright_yellow", "⚠")
+        console.print(f"    [dim cyan]Tx Hash: 0xsimulated_tx_hash_because_wallet_empty[/dim cyan]")
+        after = before - demanded
+    else:
+        try:
+            account = Account.from_key(PRIVATE_KEY)
+            tx = usdc.functions.transfer(
+                Web3.to_checksum_address(result["pay_to"]), transfer_amount
+            ).build_transaction({
+                "from": Web3.to_checksum_address(AGENT_ADDRESS),
+                "nonce": w3.eth.get_transaction_count(
+                    Web3.to_checksum_address(AGENT_ADDRESS)),
+                "gas": 100000,
+                "gasPrice": w3.eth.gas_price,
+            })
+            signed = account.sign_transaction(tx)
+            tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
 
-        if receipt.status:
-            step("Transaction confirmed on Base Sepolia", "bright_green", "✓")
-        else:
-            step("Transaction reverted on-chain", "bright_red", "✗")
-        console.print(f"    [dim cyan]Tx Hash: {tx_hash.hex()}[/dim cyan]")
-        link = f"https://sepolia.basescan.org/tx/{tx_hash.hex()}"
-        console.print(f"    [dim white]View on Explorer: [underline]{link}[/underline][/dim white]")
-    except Exception as e:
-        step(f"Transaction failed: {e}", "bright_red", "✗")
-
-    time.sleep(0.3)
-
-    after = get_balance()
+            if receipt.status:
+                step("Transaction confirmed on Base Sepolia", "bright_green", "✓")
+            else:
+                step("Transaction reverted on-chain", "bright_red", "✗")
+            console.print(f"    [dim cyan]Tx Hash: {tx_hash.hex()}[/dim cyan]")
+            link = f"https://sepolia.basescan.org/tx/{tx_hash.hex()}"
+            console.print(f"    [dim white]View on Explorer: [underline]{link}[/underline][/dim white]")
+        except Exception as e:
+            step(f"Transaction failed: {e}", "bright_red", "✗")
+            
+        after = get_balance()
     show_balance(before, after, "unprotected")
 
     attack_type, failure_msg = _detect_attack_type(url, described, demanded, inflation)
@@ -468,6 +456,11 @@ def run_protected(url):
     # ── Summary ──
     console.print()
     before = get_balance()
+    is_simulated = False
+    if before < demanded and not blocked:
+        # If wallet is empty, pretend we had funds for the demo
+        before = 1000.00
+        is_simulated = True
 
     if blocked:
         show_balance(before, before, "protected")
