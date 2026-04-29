@@ -66,14 +66,15 @@ def _print_color(msg: str, color: str = "red"):
 
 class _GuardHook:
     """Intercepts 402 responses before x402's payment hook runs."""
-
     def __init__(
         self,
         mainnet_rpc_url: Optional[str] = None,
         budget_tracker: Optional[BudgetTracker] = None,
+        raise_on_block: bool = False,
     ):
         self.mainnet_rpc_url = mainnet_rpc_url
         self.budget_tracker = budget_tracker
+        self.raise_on_block = raise_on_block
 
     async def on_response(self, response):
         if response.status_code != 402:
@@ -101,8 +102,11 @@ class _GuardHook:
         price_result = validate_price(data)
         if not price_result["valid"]:
             _log_blocked(url, price_result)
-            _print_color(price_result["reason"])
-            raise PaymentBlockedError(price_result)
+            _print_color(f"[DoorNo.402] [BLOCKED] PAYMENT BLOCKED: {price_result['reason']}")
+            if self.raise_on_block:
+                raise PaymentBlockedError(price_result)
+            response.status_code = 403
+            return
 
         # ── VULN-02: ENS Trust Score ──
         pay_to = req.get("payTo", "")
@@ -120,8 +124,11 @@ class _GuardHook:
                     "trust_score": trust.to_dict(),
                 }
                 _log_blocked(url, result)
-                _print_color(result["reason"])
-                raise PaymentBlockedError(result)
+                _print_color(f"[DoorNo.402] [BLOCKED] PAYMENT BLOCKED: {result['reason']}")
+                if self.raise_on_block:
+                    raise PaymentBlockedError(result)
+                response.status_code = 403
+                return
 
             if trust.action == "flag":
                 _log_flagged(url, trust)
@@ -152,8 +159,11 @@ class _GuardHook:
                     },
                 }
                 _log_blocked(url, result)
-                _print_color(budget_status.reason)
-                raise PaymentBlockedError(result)
+                _print_color(f"[DoorNo.402] [BLOCKED] PAYMENT BLOCKED: {budget_status.reason}")
+                if self.raise_on_block:
+                    raise PaymentBlockedError(result)
+                response.status_code = 403
+                return
 
             # Record the spend (payment will proceed)
             self.budget_tracker.record(demanded_usd)
@@ -169,6 +179,7 @@ def protect(
     client,
     daily_budget: Optional[float] = None,
     mainnet_rpc_url: Optional[str] = None,
+    raise_on_block: bool = False,
 ):
     """Wrap an x402HttpxClient with DoorNo.402 security.
 
@@ -186,11 +197,13 @@ def protect(
         client: An httpx client (typically x402HttpxClient).
         daily_budget: Optional daily spending limit in USD.
         mainnet_rpc_url: Ethereum mainnet RPC for ENS lookups.
+        raise_on_block: If True, raises PaymentBlockedError. If False, silently converts to HTTP 403.
     """
     tracker = BudgetTracker(daily_budget) if daily_budget else None
     guard = _GuardHook(
         mainnet_rpc_url=mainnet_rpc_url,
         budget_tracker=tracker,
+        raise_on_block=raise_on_block,
     )
     existing = client.event_hooks.get("response", [])
     client.event_hooks["response"] = [guard.on_response] + existing
