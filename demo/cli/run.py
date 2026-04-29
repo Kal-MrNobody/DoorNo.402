@@ -307,7 +307,12 @@ def run_protected(url):
 
 
 def run_side_by_side(url):
-    pass
+    console.print()
+    console.rule("[bold red]Without DoorNo.402[/bold red]", style="dim")
+    run_unprotected(url)
+    console.print()
+    console.rule("[bold green]With DoorNo.402[/bold green]", style="dim")
+    run_protected(url)
 
 
 def run_custom():
