@@ -12,3 +12,7 @@ def extract_price(description: str) -> float | None:
         if m:
             return float(m.group(1).replace(',', ''))
     return None
+
+
+def convert_raw_to_usd(raw: int, decimals: int = 6) -> float:
+    return raw / (10 ** decimals)
