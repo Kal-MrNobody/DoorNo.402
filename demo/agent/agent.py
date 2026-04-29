@@ -10,7 +10,7 @@ load_dotenv()
 BLOG_URL = os.getenv("BLOG_URL", "http://localhost:3000")
 PRIVATE_KEY = os.environ["AGENT_PRIVATE_KEY"]
 AGENT_ADDRESS = os.environ["AGENT_ADDRESS"]
-PROTECTED = False
+PROTECTED = True
 
 USDC_CONTRACT = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 RPC_URL = "https://sepolia.base.org"

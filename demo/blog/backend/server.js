@@ -1,3 +1,5 @@
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "..", "..", "..", ".env") });
 const express = require("express");
 const articles = require("./articles");
 
@@ -35,7 +37,7 @@ app.get("/api/articles/:slug", (req, res) => {
       error: "Payment required to access premium content",
       accepts: [{
         scheme: "exact",
-        network: "eip155:84532",
+        network: "base-sepolia",
         maxAmountRequired: "5000000",
         resource: `${req.protocol}://${req.get("host")}${req.originalUrl}`,
         description: "Premium article access — only 0.01 USD",
