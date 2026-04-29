@@ -288,11 +288,12 @@ def run_protected(url):
     validation = validate_price(result["data"])
 
     if not validation["valid"]:
-        console.print("  " + Panel(
+        from rich.padding import Padding
+        console.print(Padding(Panel(
             validation["reason"],
             style="bold bright_red",
             expand=False
-        ))
+        ), (0, 0, 0, 2)))
         time.sleep(0.3)
 
         before = get_balance()
@@ -318,7 +319,7 @@ def run_protected(url):
             with open("blocked_payments.log") as f:
                 lines = f.readlines()
                 last = lines[-1].strip() if lines else ""
-            console.print("  " + Panel(last, style="dim white", expand=False))
+            console.print(Padding(Panel(last, style="dim white", expand=False), (0, 0, 0, 2)))
         except FileNotFoundError:
             pass
     else:
