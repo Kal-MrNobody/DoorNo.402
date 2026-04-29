@@ -45,7 +45,7 @@ def validate_price(payment_details: dict) -> dict:
         return {
             "valid": False,
             "reason": (
-                f"[DoorNo.402] BLOCKED — description: ${described:.2f}, "
+                f"[DoorNo.402] BLOCKED -- description: ${described:.2f}, "
                 f"demanded: ${demanded:.2f}, inflation: {inflation * 100:.0f}%, "
                 f"threshold: {INFLATION_THRESHOLD * 100:.0f}%"
             ),
