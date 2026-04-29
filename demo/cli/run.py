@@ -84,3 +84,45 @@ def show_balance(before, after, mode="unprotected"):
     else:
         table.add_row("Protected", f"[bold green]${diff:.2f} saved[/bold green]")
     console.print(Panel(table, title="[bold blue]Wallet[/bold blue]", style="dim white"))
+
+
+def main_menu():
+    while True:
+        console.print()
+        console.print("[bold blue]  Select an option:[/bold blue]")
+        console.print("  [1] Demo Mode       -- attack demo against Cryptology blog")
+        console.print("  [2] Custom URL      -- give the agent any URL to fetch")
+        console.print("  [3] Find x402 Sites -- search for x402-enabled services")
+        console.print("  [dim][q] Quit[/dim]")
+        console.print()
+        choice = console.input("[dim]>[/dim] ").strip().lower()
+        if choice == "1":
+            demo_menu()
+        elif choice == "2":
+            run_custom()
+        elif choice == "3":
+            run_search()
+        elif choice == "q":
+            console.print("[dim]bye[/dim]")
+            break
+        else:
+            console.print("[bold red]invalid option[/bold red]")
+
+
+def demo_menu():
+    pass
+
+
+def run_custom():
+    pass
+
+
+def run_search():
+    pass
+
+
+if __name__ == "__main__":
+    check_env()
+    show_header()
+    main_menu()
+
