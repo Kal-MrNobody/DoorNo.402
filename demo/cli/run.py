@@ -135,7 +135,8 @@ def main_menu():
 def fetch_402(url):
     try:
         resp = httpx.get(url, timeout=10)
-    except httpx.ConnectError:
+    except (httpx.ConnectError, httpx.ConnectTimeout,
+            httpx.ReadTimeout, httpx.HTTPError, Exception):
         return None, "server_down"
     if resp.status_code != 402:
         return resp, "not_402"
