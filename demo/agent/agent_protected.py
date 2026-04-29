@@ -1,3 +1,13 @@
+"""DoorNo.402 — Protected Agent Demo
+
+The ONLY difference from agent_vulnerable.py is TWO lines:
+  1. from doorno402 import protect, PaymentBlockedError
+  2. client = protect(client)
+
+That's it. The SDK handles injection scanning, price validation,
+ENS trust scoring, and budget enforcement automatically.
+"""
+
 import os
 import asyncio
 import httpx
@@ -5,7 +15,7 @@ from dotenv import load_dotenv
 from eth_account import Account
 from web3 import Web3
 
-# ---- one import, one wrap. that's the whole SDK integration. ----
+# ─── THIS IS THE ONLY IMPORT YOU ADD ───
 from doorno402 import protect, PaymentBlockedError
 
 load_dotenv()
@@ -36,32 +46,35 @@ def get_balance():
 
 
 async def main():
+    url = f"{BLOG_URL}/api/articles/bitcoin-etf-analysis"
     print("[agent] mode: PROTECTED by doorno402")
     print(f"[agent] wallet: {AGENT_ADDRESS}")
     print(f"[agent] balance: {get_balance():.2f} USDC")
-    print(f"[agent] target: {BLOG_URL}/api/articles/bitcoin-etf-analysis")
+    print(f"[agent] target: {url}")
     print()
 
     async with httpx.AsyncClient() as client:
-        # ---- one line. SDK handles everything from here. ----
-        client = protect(client)
+        # ─── THIS IS THE ONLY LINE YOU ADD ───
+        client = protect(client, daily_budget=5.00)
 
         try:
-            resp = await client.get(f"{BLOG_URL}/api/articles/bitcoin-etf-analysis")
+            resp = await client.get(url)
         except PaymentBlockedError as e:
-            print()
-            print(f"[agent] BLOCKED by doorno402. payment was NOT sent.")
-            print(f"[agent] balance: {get_balance():.2f} USDC -- unchanged")
+            print(f"[agent] ❌ BLOCKED by doorno402!")
+            print(f"[agent] reason: {e.result.get('reason', 'unknown')}")
+            print(f"[agent] balance: {get_balance():.2f} USDC -- unchanged, funds SAFE")
             return
 
+        # If we get here, the SDK approved the payment as legitimate
         if resp.status_code == 402:
-            # SDK approved the payment -- price matched description
             data = resp.json()
             req = data["accepts"][0]
             pay_to = req["payTo"]
             raw_amount = int(req["maxAmountRequired"])
 
-            print(f"[agent] doorno402 approved -- price is legitimate")
+            print(f"[agent] ✓ doorno402 approved -- payment is legitimate")
+            print(f"[agent] paying ${raw_amount / 1_000_000:.2f} to {pay_to[:10]}...")
+
             tx = usdc.functions.transfer(
                 Web3.to_checksum_address(pay_to), raw_amount
             ).build_transaction({
