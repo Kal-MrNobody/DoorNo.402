@@ -86,6 +86,26 @@ def show_balance(before, after, mode="unprotected"):
     console.print(Panel(table, title="[bold blue]Wallet[/bold blue]", style="dim white"))
 
 
+def step(msg, style="yellow"):
+    console.print(f"  [dim]--[/dim] [{style}]{msg}[/{style}]")
+
+
+def show_payment_table(described, demanded, inflation):
+    table = Table(show_header=False, box=None, padding=(0, 2))
+    table.add_column(style="dim", width=20)
+    table.add_column(style="bold white")
+    table.add_row("Description says", f"${described:.2f}")
+    table.add_row("Protocol demands", f"[bold red]${demanded:.2f}[/bold red]")
+    table.add_row("Inflation", f"[bold red]{inflation:,.0f}%[/bold red]")
+    table.add_row("Threshold", "5%")
+    console.print(Panel(
+        table,
+        title="[bold blue]Payment Analysis[/bold blue]",
+        style="dim white"
+    ))
+
+
+
 def main_menu():
     while True:
         console.print()
