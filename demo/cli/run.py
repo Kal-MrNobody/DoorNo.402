@@ -316,7 +316,41 @@ def run_side_by_side(url):
 
 
 def run_custom():
-    pass
+    console.print()
+    url = console.input("  [bold blue]Enter URL to fetch:[/bold blue] ").strip()
+    if not url:
+        return
+
+    protected = console.input(
+        "  Run with DoorNo.402 protection? [dim][y/n][/dim] "
+    ).strip().lower() == "y"
+
+    console.print()
+    step(f"Fetching: {url}")
+    time.sleep(0.4)
+
+    result, status = fetch_402(url)
+    if status == "server_down":
+        console.print(Panel("Connection failed.", style="bold red"))
+        return
+
+    if status == "not_402":
+        code = result.status_code
+        step(f"Server responded: {code}", "dim")
+        if code == 200:
+            body = result.text[:500]
+            console.print(Panel(body, title="[bold blue]Response[/bold blue]", style="dim white"))
+        else:
+            console.print(Panel(f"HTTP {code}", style="yellow"))
+        return
+
+    step("Server responded: 402 Payment Required", "bold red")
+    time.sleep(0.3)
+
+    if protected:
+        run_protected(url)
+    else:
+        run_unprotected(url)
 
 
 def run_search():
