@@ -99,7 +99,6 @@ export function protect(
 
     const clone = resp.clone();
     const data = await clone.json();
-    const url = typeof input === "string" ? input : input.toString();
     const accepts = (data.accepts as Record<string, unknown>[]) || [];
 
     if (!accepts.length) return resp;
