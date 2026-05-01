@@ -103,4 +103,146 @@ async function getWalletId(apiKey: string): Promise<string> {
   throw new Error("no wallet integration found in KeeperHub")
 }
 
-export { callMcpTool, getWalletId }
+async function createTransferWorkflow(
+  apiKey: string,
+  walletId: string,
+  recipient: string,
+  amount: string,
+  tokenAddress: string
+): Promise<string> {
+  const prompt = (
+    `Transfer ${amount} USDC token at ${tokenAddress} ` +
+    `to ${recipient} on base-sepolia ` +
+    `using wallet ${walletId}`
+  )
+  const result = await callMcpTool(
+    apiKey,
+    "ai_generate_workflow",
+    { prompt, walletId }
+  )
+  const parsed = JSON.parse(result)
+  return parsed.id ?? parsed.workflowId ?? ""
+}
+
+async function executeWorkflow(
+  apiKey: string,
+  workflowId: string
+): Promise<string> {
+  const result = await callMcpTool(
+    apiKey,
+    "execute_workflow",
+    { workflowId }
+  )
+  const parsed = JSON.parse(result)
+  return parsed.executionId ?? parsed.id ?? ""
+}
+
+interface ExecutionResult {
+  status: string
+  transactionHash?: string
+  transactionLink?: string
+  error?: string
+}
+
+async function pollExecutionStatus(
+  apiKey: string,
+  executionId: string,
+  maxAttempts = 12,
+  intervalMs = 5000
+): Promise<ExecutionResult> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const result = await callMcpTool(
+      apiKey,
+      "get_execution_status",
+      { executionId }
+    )
+    const parsed = JSON.parse(result) as ExecutionResult
+    if (parsed.status === "completed" || parsed.status === "failed") {
+      return parsed
+    }
+    await new Promise(r => setTimeout(r, intervalMs))
+  }
+  return { status: "timeout", error: "execution did not complete in time" }
+}
+
+export interface McpExecutionResult {
+  approved: boolean
+  blocked: boolean
+  blockReason?: string
+  executionId?: string
+  transactionHash?: string
+  transactionLink?: string
+  error?: string
+}
+
+export async function validateAndExecute(
+  paymentDetails: Record<string, unknown>,
+  apiKey: string,
+  options?: {
+    dailyBudget?: number
+    mainnetRpcUrl?: string
+  }
+): Promise<McpExecutionResult> {
+  // Import DoorNo.402 validators inline
+  const { validatePrice } = await import("./validators/price")
+  const { validateInjection } = await import("./validators/injection")
+  const { validateTls } = await import("./validators/tls")
+
+  const accepts = (
+    paymentDetails.accepts as Record<string, unknown>[]
+  ) ?? []
+  const req = accepts[0] ?? {}
+  const url = String(req.resource ?? "")
+
+  // TLS check
+  const tlsResult = validateTls(url)
+  if (!tlsResult.valid) {
+    return { approved: false, blocked: true, blockReason: tlsResult.reason }
+  }
+
+  // Injection check
+  const injectionResult = validateInjection(paymentDetails)
+  if (injectionResult.injectionDetected) {
+    return {
+      approved: false,
+      blocked: true,
+      blockReason: injectionResult.reason,
+    }
+  }
+
+  // Price check
+  const priceResult = validatePrice(paymentDetails)
+  if (!priceResult.valid) {
+    return { approved: false, blocked: true, blockReason: priceResult.reason }
+  }
+
+  // All checks passed — execute via KeeperHub MCP
+  try {
+    const walletId = await getWalletId(apiKey)
+    const raw = parseInt(String(req.maxAmountRequired ?? "0"), 10)
+    const amount = (raw / 1_000_000).toFixed(6)
+    const workflowId = await createTransferWorkflow(
+      apiKey,
+      walletId,
+      String(req.payTo ?? ""),
+      amount,
+      String(req.asset ?? "")
+    )
+    const executionId = await executeWorkflow(apiKey, workflowId)
+    const status = await pollExecutionStatus(apiKey, executionId)
+    return {
+      approved: true,
+      blocked: false,
+      executionId,
+      transactionHash: status.transactionHash,
+      transactionLink: status.transactionLink,
+      error: status.error,
+    }
+  } catch (err) {
+    return {
+      approved: true,
+      blocked: false,
+      error: String(err),
+    }
+  }
+}
