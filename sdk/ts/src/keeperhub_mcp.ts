@@ -30,3 +30,19 @@ async function callMcpTool(
   }
   return data.content[0]?.text ?? ""
 }
+
+async function getWalletId(apiKey: string): Promise<string> {
+  const result = await callMcpTool(
+    apiKey,
+    "get_wallet_integration",
+    {}
+  )
+  const parsed = JSON.parse(result)
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    return parsed[0].id ?? parsed[0].walletId ?? ""
+  }
+  if (parsed.id) return parsed.id
+  throw new Error("no wallet integration found in KeeperHub")
+}
+
+export { getWalletId }
