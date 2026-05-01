@@ -13,6 +13,7 @@ import { validatePrice, ValidationResult } from "./validators/price";
 import { calculateTrustScore } from "./validators/ens";
 import { validateInjection } from "./validators/injection";
 import { BudgetTracker } from "./validators/budget";
+import { validateTls, validateRedirect } from "./validators/tls";
 
 import type { TrustScore, BudgetStatus } from "./types";
 
@@ -22,7 +23,8 @@ export type { ValidationResult } from "./validators/price";
 export { calculateTrustScore } from "./validators/ens";
 export { scanInjection, validateInjection } from "./validators/injection";
 export { BudgetTracker } from "./validators/budget";
-export type { TrustScore, InjectionResult, BudgetStatus } from "./types";
+export { validateTls, validateRedirect } from "./validators/tls";
+export type { TrustScore, InjectionResult, BudgetStatus, ValidationResult as TlsValidationResult } from "./types";
 
 export class PaymentBlockedError extends Error {
   constructor(public result: Record<string, unknown>) {
@@ -83,6 +85,15 @@ export function protect(
     input: RequestInfo | URL,
     init?: RequestInit
   ): Promise<Response> => {
+    const url = typeof input === "string" ? input : input.toString();
+
+    // ── VULN-06: TLS Enforcement ──
+    const tlsResult = validateTls(url);
+    if (!tlsResult.valid) {
+      logBlocked(url, tlsResult.reason);
+      throw new PaymentBlockedError({ valid: false, reason: tlsResult.reason });
+    }
+
     const resp = await fetchFn(input, init);
     if (resp.status !== 402) return resp;
 
