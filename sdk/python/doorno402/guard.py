@@ -3,8 +3,11 @@
 Runs all security validators in sequence on every 402 response:
   1. VULN-01 — Price inflation check
   2. VULN-02 — ENS recipient trust score
-  3. VULN-04 — Prompt injection scan + sanitize
-  4. VULN-05 — Daily budget enforcement
+  3. VULN-03 — Redirect hijack detection
+  4. VULN-04 — Prompt injection scan + sanitize
+  5. VULN-05 — Daily budget enforcement
+  6. VULN-06 — TLS enforcement
+  7. VULN-07 — Delivery verification (post-payment)
 """
 
 from datetime import datetime, timezone
@@ -209,10 +212,13 @@ def protect(
     """Wrap an x402HttpxClient with DoorNo.402 security.
 
     Covers:
-      - VULN-01: Price inflation check
-      - VULN-02: ENS recipient trust scoring
-      - VULN-04: Prompt injection scan + sanitize
-      - VULN-05: Daily budget enforcement (optional)
+      VULN-01: Price inflation check
+      VULN-02: ENS recipient trust scoring
+      VULN-03: Redirect hijack detection
+      VULN-04: Prompt injection scan + sanitize
+      VULN-05: Daily budget enforcement
+      VULN-06: TLS enforcement
+      VULN-07: Delivery verification (call validate_delivery after response)
 
     Usage:
         client = protect(x402HttpxClient(account=account))
