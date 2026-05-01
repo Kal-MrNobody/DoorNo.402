@@ -17,7 +17,8 @@ from eth_account import Account
 from web3 import Web3
 
 # ─── ADD LINE 1: Import the SDK ───
-# from doorno402 import protect
+#
+from doorno402 import protect
 
 load_dotenv()
 
@@ -56,7 +57,7 @@ async def main():
 
     async with httpx.AsyncClient() as client:
         # ─── ADD LINE 2: Wrap the client ───
-        # client = protect(client, daily_budget=5.00)
+        client = protect(client, daily_budget=5.00)
 
         # 1. Agent fetches the resource
         resp = await client.get(url)
@@ -94,6 +95,9 @@ async def main():
                 if resp2.status_code == 200:
                     data2 = resp2.json()
                     print(f"[agent] DATA RECEIVED: {data2.get('message', data2)}")
+                else:
+                    data2 = resp2.json()
+                    print(f"[agent] SERVER REJECTED: {data2.get('error', 'Unknown error')} (HTTP {resp2.status_code})")
                 
             except Exception as e:
                 print(f"[agent] Transaction failed: {e}")

@@ -57,15 +57,9 @@ async def main():
         # ─── THIS IS THE ONLY LINE YOU ADD ───
         client = protect(client, daily_budget=5.00)
 
-        try:
-            resp = await client.get(url)
-        except PaymentBlockedError as e:
-            print(f"[agent] ❌ BLOCKED by doorno402!")
-            print(f"[agent] reason: {e.result.get('reason', 'unknown')}")
-            print(f"[agent] balance: {get_balance():.2f} USDC -- unchanged, funds SAFE")
-            return
+        resp = await client.get(url)
 
-        # If we get here, the SDK approved the payment as legitimate
+        # If we get here, the SDK approved the payment as legitimate (or converted a block to 403)
         if resp.status_code == 402:
             data = resp.json()
             req = data["accepts"][0]

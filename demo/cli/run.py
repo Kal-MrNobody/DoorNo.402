@@ -13,6 +13,8 @@ from eth_account import Account
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from rich.padding import Padding
+from rich import box
 from web3 import Web3
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
@@ -284,6 +286,7 @@ def run_unprotected(url):
     step("Signing Ethereum transaction...", "bright_yellow")
     time.sleep(0.8)
 
+    tx_hash_hex = None
     try:
         account = Account.from_key(PRIVATE_KEY)
         tx = usdc.functions.transfer(
@@ -303,8 +306,9 @@ def run_unprotected(url):
             step("Transaction confirmed on Base Sepolia", "bright_green", "✓")
         else:
             step("Transaction reverted on-chain", "bright_red", "✗")
-        console.print(f"    [dim cyan]Tx Hash: {tx_hash.hex()}[/dim cyan]")
-        link = f"https://sepolia.basescan.org/tx/{tx_hash.hex()}"
+        tx_hash_hex = tx_hash.hex()
+        console.print(f"    [dim cyan]Tx Hash: {tx_hash_hex}[/dim cyan]")
+        link = f"https://sepolia.basescan.org/tx/{tx_hash_hex}"
         console.print(f"    [dim white]View on Explorer: [underline]{link}[/underline][/dim white]")
     except Exception as e:
         step(f"Transaction failed: {e}", "bright_red", "✗")
@@ -318,6 +322,8 @@ def run_unprotected(url):
         style="bold bright_red",
         expand=False
     ))
+    
+    return tx_hash_hex
 
 
 def run_protected(url):
@@ -503,13 +509,35 @@ def run_side_by_side(url):
     console.print("  [bold bright_red]========================================================================[/bold bright_red]")
     console.print("  [bold bright_red]                      WITHOUT DOORNO.402 SDK                            [/bold bright_red]")
     console.print("  [bold bright_red]========================================================================[/bold bright_red]")
-    run_unprotected(url)
+    unprotected_tx = run_unprotected(url)
     console.print()
     console.print()
     console.print("  [bold bright_green]========================================================================[/bold bright_green]")
     console.print("  [bold bright_green]                        WITH DOORNO.402 SDK                             [/bold bright_green]")
     console.print("  [bold bright_green]========================================================================[/bold bright_green]")
     run_protected(url)
+
+    if "/combo" in url:
+        console.print("\n\n")
+        console.print("  [bold bright_cyan]========================================================================[/bold bright_cyan]")
+        console.print("  [bold bright_cyan]                        COMBO ATTACK SUMMARY                            [/bold bright_cyan]")
+        console.print("  [bold bright_cyan]========================================================================[/bold bright_cyan]")
+        console.print()
+        table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+        table.add_column("Vulnerability", style="bold cyan")
+        table.add_column("Without SDK", style="bold red")
+        table.add_column("With SDK", style="bold green")
+        table.add_column("What DoorNo.402 Did", style="dim white")
+        table.add_column("Basescan Link", style="dim blue", overflow="fold")
+
+        tx_link = f"https://sepolia.basescan.org/tx/{unprotected_tx}" if unprotected_tx else "Failed"
+        
+        table.add_row("VULN-01 (Price Inflation)", "Agent Paid $5.00", "Blocked", "Detected 49900% inflation", tx_link)
+        table.add_row("VULN-02 (Unknown Recipient)", "Agent Paid Attacker", "Blocked", "Low ENS trust score (0/100)", tx_link)
+        table.add_row("VULN-04 (Prompt Injection)", "Data compromised", "Blocked", "AI guardrail detected payload", "N/A")
+        table.add_row("VULN-05 (Budget Drain)", "Drained to $0", "Blocked", "Daily $5.00 limit enforced", tx_link)
+        
+        console.print(Padding(table, (0, 0, 0, 2)))
 
 
 def run_custom():

@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from eth_account import Account
 from web3 import Web3
 
+
 load_dotenv()
 
 BLOG_URL = os.getenv("BLOG_URL", "http://localhost:3000")
