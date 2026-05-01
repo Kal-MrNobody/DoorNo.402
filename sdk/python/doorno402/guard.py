@@ -15,6 +15,7 @@ from .validators.ens_verifier import calculate_trust_score, TrustScore
 from .validators.injection import validate_injection
 from .validators.budget import BudgetTracker, BudgetStatus
 from .validators.tls import validate_tls
+from .validators.redirect import validate_redirect
 
 
 class PaymentBlockedError(Exception):
@@ -89,6 +90,18 @@ class _GuardHook:
                 raise PaymentBlockedError(tls_result)
             response.status_code = 403
             return
+
+        # ── VULN-03: Redirect Hijack ──
+        if hasattr(response, 'history') and response.history:
+            original_url = str(response.history[0].request.url)
+            redirect_result = validate_redirect(original_url, url)
+            if not redirect_result["valid"]:
+                _log_blocked(url, redirect_result)
+                _print_color(redirect_result["reason"])
+                if self.raise_on_block:
+                    raise PaymentBlockedError(redirect_result)
+                response.status_code = 403
+                return
 
         if response.status_code != 402:
             return
