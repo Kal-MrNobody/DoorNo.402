@@ -49,3 +49,8 @@ export interface BudgetStatus {
   requested: number;
   reason: string;
 }
+
+export interface ValidationResult {
+  valid: boolean;
+  reason: string;
+}
