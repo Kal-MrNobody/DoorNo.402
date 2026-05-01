@@ -14,6 +14,7 @@ from .validators.price import validate_price, convert_raw_to_usd
 from .validators.ens_verifier import calculate_trust_score, TrustScore
 from .validators.injection import validate_injection
 from .validators.budget import BudgetTracker, BudgetStatus
+from .validators.tls import validate_tls
 
 
 class PaymentBlockedError(Exception):
@@ -77,12 +78,23 @@ class _GuardHook:
         self.raise_on_block = raise_on_block
 
     async def on_response(self, response):
+        url = str(response.request.url)
+
+        # ── VULN-06: TLS Enforcement ──
+        tls_result = validate_tls(url)
+        if not tls_result["valid"]:
+            _log_blocked(url, tls_result)
+            _print_color(tls_result["reason"])
+            if self.raise_on_block:
+                raise PaymentBlockedError(tls_result)
+            response.status_code = 403
+            return
+
         if response.status_code != 402:
             return
 
         await response.aread()
         data = response.json()
-        url = str(response.request.url)
         accepts = data.get("accepts", [])
 
         if not accepts:
