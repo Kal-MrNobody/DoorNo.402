@@ -10,6 +10,18 @@ We confirmed this with real on-chain transactions using Coinbase's own SDK on Ba
 
 DoorNo.402 sits between the agent and the payment. It catches the fraud before any money leaves the wallet.
 
+## What it covers
+
+| # | Vulnerability | Status |
+|---|---|---|
+| 01 | Price inflation | covered |
+| 02 | Unknown recipient (ENS) | covered |
+| 03 | Redirect hijack | covered |
+| 04 | Prompt injection | covered |
+| 05 | Budget drain | covered |
+| 06 | TLS downgrade | covered |
+| 07 | Fake delivery | covered |
+
 ## Quickstart
 
 Clone and run the demo locally in under 10 minutes.
@@ -40,14 +52,14 @@ Now flip the switch — edit `agent.py`, set `PROTECTED = True`, run again. Door
 
 ## Installation
 
-Python:
+Python (v0.3.0):
 
 ```bash
 cd sdk/python
 pip install -e .
 ```
 
-TypeScript:
+TypeScript (v0.3.0):
 
 ```bash
 cd sdk/ts
@@ -92,6 +104,8 @@ try {
 
 ## KeeperHub integration
 
+DoorNo.402 validates. KeeperHub executes. Together they form a complete secure payment pipeline.
+
 ```typescript
 import { interceptAndForward } from "doorno402/mcp";
 import { KeeperHubClient } from "@keeperhub/mcp";
@@ -103,6 +117,12 @@ const safeClient = interceptAndForward(rawClient);
 // malicious 402 responses are blocked — KeeperHub never sees them
 await safeClient.execute(request);
 ```
+
+See [demo/agent/KEEPERHUB.md](demo/agent/KEEPERHUB.md) for the full integration guide.
+
+## Skills
+
+AI agents can load [skills/doorno402.md](skills/doorno402.md) to automatically know how to use DoorNo.402 for safe x402 payments.
 
 ## How the demo works
 
@@ -117,24 +137,31 @@ The demo has two parts:
 ```
 DoorNo.402/
 ├── sdk/
-│   ├── python/              # Python SDK
+│   ├── python/              # Python SDK (v0.3.0)
 │   │   ├── doorno402/
 │   │   │   ├── guard.py     # protect() wrapper + PaymentBlockedError
 │   │   │   └── validators/
-│   │   │       └── price.py # price extraction + inflation validation
+│   │   │       ├── price.py     # VULN-01: price inflation
+│   │   │       ├── ens_verifier.py  # VULN-02: ENS trust scoring
+│   │   │       ├── redirect.py  # VULN-03: redirect hijack
+│   │   │       ├── injection.py # VULN-04: prompt injection
+│   │   │       ├── budget.py    # VULN-05: budget drain
+│   │   │       ├── tls.py       # VULN-06: TLS enforcer
+│   │   │       └── delivery.py  # VULN-07: delivery verification
 │   │   └── setup.py
-│   └── ts/                  # TypeScript SDK
+│   └── ts/                  # TypeScript SDK (v0.3.0)
 │       └── src/
 │           ├── index.ts     # protect() + PaymentBlockedError
 │           ├── mcp.ts       # KeeperHub MCP integration
 │           ├── types.ts     # shared interfaces
 │           └── validators/
-│               └── price.ts # price extraction + inflation validation
 ├── demo/
-│   ├── blog/
-│   │   ├── backend/         # Express server with malicious x402 paywall
-│   │   └── frontend/        # Dark-themed blog UI
-│   └── agent/
-│       └── agent.py         # demo agent with PROTECTED toggle
+│   ├── blog/                # Malicious blog with x402 paywall
+│   ├── attack-server/       # Multi-vuln attack simulation server
+│   ├── cli/                 # Interactive terminal demo
+│   └── agent/               # Demo agents + KeeperHub integration
+├── skills/
+│   └── doorno402.md         # Agent skill prompt
+├── FEEDBACK.md              # KeeperHub developer feedback
 └── README.md
 ```
