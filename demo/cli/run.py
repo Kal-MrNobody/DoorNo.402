@@ -20,6 +20,10 @@ from web3 import Web3
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
+if sys.platform == "win32":
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+    
 console = Console()
 
 # Config
