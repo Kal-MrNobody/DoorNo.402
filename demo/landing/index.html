@@ -298,6 +298,33 @@
         .skill-card-wrapper { max-width: 800px; margin: 0 auto; }
         .skill-note { text-align: center; margin-top: 32px; font-size: 15px; }
 
+        /* Live Results Section */
+        #demo { background: #f8fafc; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); padding-bottom: 160px; margin-top: -100px; padding-top: 200px; position: relative; z-index: 4; }
+        .demo-table-container { overflow-x: auto; margin-bottom: 32px; box-shadow: var(--shadow-card); border-radius: 16px; border: 1px solid var(--border-color); background: #fff; max-width: 900px; margin: 0 auto 32px; }
+        .demo-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .demo-table th { padding: 16px 24px; background: #f8fafc; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); }
+        .demo-table td { padding: 20px 24px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
+        .status-blocked { display: inline-block; padding: 4px 12px; background: #fef2f2; color: var(--danger-red); font-size: 13px; font-weight: 700; border-radius: 100px; border: 1px solid #fecaca; }
+        .saved-amt { color: var(--accent-green); font-weight: 600; font-family: var(--font-code); }
+        .total-row td { background: #ecfdf5; font-weight: 700; color: var(--text-primary); border-bottom: none; }
+        .demo-table tr.animate-row { opacity: 0; transform: translateX(-20px); transition: opacity 0.4s ease-out, transform 0.4s ease-out; }
+        .demo-table tr.animate-row.visible { opacity: 1; transform: translateX(0); }
+
+        /* Footer */
+        #footer { background: var(--text-primary); color: #fff; padding: 100px 0 40px; margin-top: -100px; position: relative; z-index: 3; }
+        .footer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 48px; margin-bottom: 80px; max-width: 1200px; margin-left: auto; margin-right: auto; padding: 0 24px; }
+        .footer-left .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 20px; margin-bottom: 16px; }
+        .footer-left p { color: #94a3b8; font-size: 14px; margin-bottom: 8px; }
+        .footer-center h4, .footer-right h4 { color: #fff; font-size: 16px; margin-bottom: 24px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 12px; }
+        .footer-links a { color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-links a:hover { color: #fff; }
+        .footer-install-code { background: #1e293b; padding: 12px 16px; border-radius: 8px; font-family: var(--font-code); font-size: 13px; color: #cbd5e1; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+        .footer-install-code button { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .footer-install-code button:hover { color: #fff; }
+        .footer-bottom { text-align: center; border-top: 1px solid #334155; padding-top: 32px; color: #64748b; font-size: 14px; max-width: 1200px; margin: 0 auto; }
+
         @media (max-width: 768px) {
             h1 { font-size: 40px; }
             h2 { font-size: 32px; }
@@ -306,8 +333,8 @@
             .nav-right .nav-link { display: none; }
             .hamburger { display: flex; }
             .hero-actions { flex-direction: column; }
-            #hero, #problem, #install, #keeperhub { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
-            .two-column, .keeper-two-col { grid-template-columns: 1fr; }
+            #hero, #problem, #install, #keeperhub, #demo { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
+            .two-column, .keeper-two-col, .footer-grid { grid-template-columns: 1fr; }
             .diagram-row, .timeline-branches { flex-direction: column; }
             .flow-arrow { transform: rotate(90deg); }
             .config-cards { grid-template-columns: 1fr; }
@@ -837,10 +864,110 @@ VULN-07: Fake delivery</code></pre>
 
     <!-- 9. Live Demo Results Section -->
     <section id="demo">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">Live Results</div>
+                <h2>Tested against 6 attack servers</h2>
+                <p class="section-subtext">Each server runs a different attack. All blocked.</p>
+            </div>
+            
+            <div class="demo-table-container animate-on-scroll delay-1">
+                <table class="demo-table">
+                    <thead>
+                        <tr>
+                            <th>Site</th>
+                            <th>Attack</th>
+                            <th>Result</th>
+                            <th>Saved</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="animate-row" style="transition-delay: 0.1s;">
+                            <td class="vuln-name">CryptoInsider</td>
+                            <td>Price Inflation</td>
+                            <td><span class="status-blocked">BLOCKED</span></td>
+                            <td class="saved-amt">$5.00</td>
+                        </tr>
+                        <tr class="animate-row" style="transition-delay: 0.2s;">
+                            <td class="vuln-name">ChainPulse</td>
+                            <td>Prompt Injection</td>
+                            <td><span class="status-blocked">BLOCKED</span></td>
+                            <td class="saved-amt">$0.01</td>
+                        </tr>
+                        <tr class="animate-row" style="transition-delay: 0.3s;">
+                            <td class="vuln-name">BlockBrief</td>
+                            <td>Budget Drain</td>
+                            <td><span class="status-blocked">BLOCKED</span></td>
+                            <td class="saved-amt">$0.90</td>
+                        </tr>
+                        <tr class="animate-row" style="transition-delay: 0.4s;">
+                            <td class="vuln-name">NodeTimes</td>
+                            <td>Unknown Recipient</td>
+                            <td><span class="status-blocked">BLOCKED</span></td>
+                            <td class="saved-amt">$0.01</td>
+                        </tr>
+                        <tr class="animate-row" style="transition-delay: 0.5s;">
+                            <td class="vuln-name">Web3Daily</td>
+                            <td>TLS Downgrade</td>
+                            <td><span class="status-blocked">BLOCKED</span></td>
+                            <td class="saved-amt">$0.01</td>
+                        </tr>
+                        <tr class="animate-row" style="transition-delay: 0.6s;">
+                            <td class="vuln-name">ComboAttack</td>
+                            <td>All 4 violations</td>
+                            <td><span class="status-blocked">BLOCKED</span></td>
+                            <td class="saved-amt">$999,999.00</td>
+                        </tr>
+                        <tr class="total-row animate-row" style="transition-delay: 0.7s;">
+                            <td colspan="2">Total: 6/6 blocked</td>
+                            <td></td>
+                            <td class="saved-amt">$1,000,004.93 protected</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="vuln-note animate-on-scroll delay-2">All tests run on Base Sepolia testnet.<br>Transaction hashes available on Basescan.</p>
+        </div>
     </section>
 
     <!-- 10. Footer -->
     <footer id="footer">
+        <div class="footer-grid">
+            <div class="footer-left">
+                <div class="logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    DoorNo.402
+                </div>
+                <p>The security layer your agent needs.</p>
+                <p>Built at ETHConf 2026</p>
+            </div>
+            <div class="footer-center">
+                <h4>Links</h4>
+                <ul class="footer-links">
+                    <li><a href="#">GitHub</a></li>
+                    <li><a href="#">PyPI</a></li>
+                    <li><a href="#">npm</a></li>
+                    <li><a href="#">KeeperHub Docs</a></li>
+                    <li><a href="#">ENS</a></li>
+                </ul>
+            </div>
+            <div class="footer-right">
+                <h4>Get Started</h4>
+                <div class="footer-install-code">
+                    <span>pip install doorno402</span>
+                    <button onclick="copyText('pip install doorno402', this)">Copy</button>
+                </div>
+                <div class="footer-install-code">
+                    <span>npm install doorno402</span>
+                    <button onclick="copyText('npm install doorno402', this)">Copy</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            MIT License | Open source | DoorNo.402 2026
+        </div>
     </footer>
 
     <!-- highlight.js Script -->
