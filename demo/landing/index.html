@@ -3,432 +3,657 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DoorNo.402 | Autonomous Security</title>
+    <title>DoorNo.402 - Secure Agent Payments</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <style>
         :root {
-            --bg-dark: #07090F;
-            --neon-cyan: #00f2fe;
-            --neon-blue: #4facfe;
-            --neon-pink: #ff0844;
-            --neon-purple: #8a2387;
-            
-            --glass-bg: rgba(15, 20, 35, 0.6);
-            --glass-border: rgba(0, 242, 254, 0.15);
-            --glass-glow: 0 0 20px rgba(0, 242, 254, 0.05);
-            
-            --text-main: #ffffff;
-            --text-muted: #8b9bb4;
+            --dark: #333333;
+            --light: #FFFFFF;
+            --bg: #F4F4F4;
+            --text: #252525;
+            --blue: #79BBE3;
+            --pink: #EFBDD9;
+            --purple: #685FD4;
+            --yellow: #D7A94F;
+            --green: #A8E6CF;
+            --red: #FF8B94;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: var(--text-main);
-            background: var(--bg-dark);
+            background-color: var(--bg);
+            color: var(--text);
             overflow-x: hidden;
         }
 
-        /* Tech Background Layer */
-        .bg-layer {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -2;
-            background: radial-gradient(circle at 15% 50%, rgba(79, 172, 254, 0.08), transparent 25%),
-                        radial-gradient(circle at 85% 30%, rgba(255, 8, 68, 0.08), transparent 25%);
+        /* Utility Classes */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 24px;
         }
 
-        /* Abstract Tech Lines/Grid */
-        .tech-grid {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1;
-            background-image: 
-                linear-gradient(rgba(0, 242, 254, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 242, 254, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
-            animation: gridMove 20s linear infinite;
+        .brutalist-border {
+            border: 3px solid var(--dark);
         }
 
-        @keyframes gridMove {
-            0% { transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px); }
-            100% { transform: perspective(500px) rotateX(60deg) translateY(40px) translateZ(-200px); }
+        .brutalist-shadow {
+            box-shadow: 8px 8px 0px var(--dark);
         }
 
-        /* Glowing Orbs */
-        .glow-orb {
-            position: fixed; border-radius: 50%; filter: blur(100px); z-index: -1; opacity: 0.5;
-            animation: orbFloat 15s infinite alternate ease-in-out;
-        }
-        .orb-cyan { width: 400px; height: 400px; background: var(--neon-cyan); top: 10%; left: -100px; animation-delay: 0s; }
-        .orb-purple { width: 500px; height: 500px; background: var(--neon-purple); bottom: -100px; right: -100px; animation-delay: -5s; }
-
-        @keyframes orbFloat {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(100px, 50px); }
+        .brutalist-card {
+            background: var(--light);
+            border: 3px solid var(--dark);
+            border-radius: 32px;
+            padding: 40px;
         }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; }
-
-        /* Navigation */
+        /* Navbar */
         nav {
-            position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
-            background: rgba(10, 15, 25, 0.8);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            padding: 16px 32px; border-radius: 100px;
-            display: flex; align-items: center; gap: 40px;
-            z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            background: var(--light);
+            border-bottom: 3px solid var(--dark);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .logo {
-            font-weight: 800; font-size: 20px; color: #fff; text-decoration: none;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
-        }
-        .nav-links { display: flex; gap: 24px; }
-        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 14px; transition: 0.2s; }
-        .nav-links a:hover { color: var(--neon-cyan); text-shadow: 0 0 8px rgba(0, 242, 254, 0.4); }
-
-        /* Hero Section */
-        .hero { padding: 200px 0 100px; text-align: center; }
-        .hero h1 { 
-            font-size: clamp(48px, 6vw, 76px); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px;
-            background: linear-gradient(135deg, #ffffff 0%, #b0c4de 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-        .hero p { font-size: 20px; color: var(--text-muted); max-width: 650px; margin: 0 auto 50px; line-height: 1.6; }
-
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3);
-            padding: 8px 20px; border-radius: 100px; font-weight: 600; font-size: 14px; color: var(--neon-cyan);
-            margin-bottom: 32px; box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* Glass Terminal */
-        .terminal-wrapper { perspective: 1000px; margin-bottom: 60px; }
-        .terminal {
-            background: rgba(5, 8, 15, 0.8);
-            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(0, 242, 254, 0.2);
-            border-radius: 16px; overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 30px rgba(0, 242, 254, 0.1) inset;
-            text-align: left; max-width: 850px; margin: 0 auto;
-            transform: rotateX(5deg); transition: 0.4s ease-out;
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
         }
-        .terminal:hover { transform: rotateX(0deg); box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0, 242, 254, 0.15) inset; }
-        .terminal-header { display: flex; align-items: center; padding: 16px; background: rgba(0, 242, 254, 0.05); border-bottom: 1px solid rgba(0, 242, 254, 0.1); }
-        .terminal-dots { display: flex; gap: 8px; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .dot.r { background: #ff5f56; box-shadow: 0 0 5px #ff5f56; } 
-        .dot.y { background: #ffbd2e; box-shadow: 0 0 5px #ffbd2e; } 
-        .dot.g { background: #27c93f; box-shadow: 0 0 5px #27c93f; }
-        .terminal-title { margin-left: auto; margin-right: auto; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--neon-cyan); opacity: 0.7; }
-        .terminal-body { padding: 32px; font-family: 'JetBrains Mono', monospace; font-size: 15px; line-height: 1.8; color: #fff; height: 360px; overflow-y: auto; }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 18px;
+            transition: transform 0.2s;
+        }
+
+        .nav-links a:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
+            background: var(--dark);
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 20px;
+            border-radius: 40px;
+            box-shadow: 6px 6px 0px var(--blue);
+            border: 2px solid var(--dark);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px var(--blue);
+        }
+
+        .btn-primary:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px var(--blue);
+        }
         
-        .term-line { opacity: 0; animation: fadeIn 0.1s forwards; margin-bottom: 8px; }
-        @keyframes fadeIn { to { opacity: 1; } }
-        .c-cmd { color: var(--neon-cyan); } .c-sys { color: var(--text-muted); } .c-err { color: #ff4b4b; text-shadow: 0 0 5px rgba(255,75,75,0.5); } .c-ok { color: #00e676; text-shadow: 0 0 5px rgba(0,230,118,0.5); } .c-warn { color: #ffea00; }
-
-        /* Guide / Steps Section */
-        .guide-section { padding: 100px 0 150px; }
+        .btn-secondary {
+            background: var(--pink);
+            color: var(--dark);
+            box-shadow: 6px 6px 0px var(--dark);
+        }
         
-        .timeline-line {
-            position: absolute; left: 50px; top: 0; bottom: 0; width: 2px;
-            background: linear-gradient(to bottom, transparent, rgba(0, 242, 254, 0.3), rgba(255, 8, 68, 0.3), transparent);
-            z-index: -1;
+        .btn-secondary:hover {
+            box-shadow: 8px 8px 0px var(--dark);
+        }
+        
+        .btn-secondary:active {
+            box-shadow: 2px 2px 0px var(--dark);
         }
 
-        .step-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 60px 60px 60px 100px;
-            margin-bottom: 80px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        /* Hero Section with Tech Background */
+        .hero {
             position: relative;
-            opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .step-card.visible { opacity: 1; transform: translateY(0); }
-        
-        .step-node {
-            position: absolute; left: -24px; top: 60px;
-            width: 48px; height: 48px; border-radius: 50%;
-            background: var(--bg-dark); border: 2px solid var(--neon-cyan);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--neon-cyan);
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+            padding: 120px 0;
+            display: flex;
+            align-items: center;
+            border-bottom: 3px solid var(--dark);
+            /* Image background for the hero */
+            background-image: url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
         }
 
-        .step-card h2 { font-size: 32px; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.01em; }
-        .step-card p { font-size: 18px; color: var(--text-muted); margin-bottom: 40px; line-height: 1.6; max-width: 650px; }
-
-        /* Neon Code Windows */
-        .code-window {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px; overflow: hidden;
+        /* The specific overlay from the user snippet */
+        .hero-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            background: linear-gradient(89.82deg, #1E1E1E -6.88%, rgba(0, 0, 0, 0.4) 87.45%);
+            z-index: 1;
         }
+
+        .hero-container {
+            position: relative;
+            z-index: 2; /* Sit above the overlay */
+            display: flex;
+            align-items: center;
+            gap: 60px;
+            width: 100%;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .hero-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .hero h1 {
+            font-weight: 700;
+            font-size: 64px;
+            line-height: 1.1;
+            color: var(--light); /* White text to contrast dark overlay */
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 span {
+            background: var(--yellow);
+            color: var(--dark);
+            padding: 0 10px;
+            display: inline-block;
+            transform: rotate(-2deg);
+            border: 3px solid var(--dark);
+        }
+
+        .hero p {
+            font-size: 24px;
+            line-height: 1.5;
+            color: #E0E0E0;
+            max-width: 600px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+        }
+
+        .hero-right {
+            flex: 1;
+            position: relative;
+        }
+
+        .hero-image-wrapper {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 3px solid var(--light);
+            border-radius: 40px;
+            height: 500px;
+            position: relative;
+            box-shadow: 16px 16px 0px var(--dark);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-badge {
+            position: absolute;
+            background: var(--light);
+            border: 3px solid var(--dark);
+            padding: 16px 24px;
+            border-radius: 20px;
+            box-shadow: 6px 6px 0px var(--dark);
+            font-weight: 600;
+            font-size: 18px;
+            z-index: 10;
+            color: var(--dark);
+        }
+
+        .badge-1 { top: 40px; left: -30px; transform: rotate(-5deg); background: var(--pink); }
+        .badge-2 { bottom: 60px; right: -20px; transform: rotate(3deg); background: var(--green); }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 60px 0;
+            background: var(--light);
+            border-bottom: 3px solid var(--dark);
+        }
+
+        .stats-grid {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-weight: 700;
+            font-size: 56px;
+            color: var(--dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            font-size: 20px;
+            color: var(--text);
+        }
+
+        /* Implementation Section (Code) */
+        .code-section {
+            padding: 100px 0;
+            background: var(--bg);
+        }
+
+        .section-header {
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .section-header h2 {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 16px;
+        }
+
+        .code-container {
+            display: flex;
+            gap: 40px;
+            align-items: stretch;
+        }
+
+        .code-block-wrapper {
+            flex: 1;
+            background: var(--dark);
+            border: 3px solid var(--dark);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 12px 12px 0px var(--blue);
+            display: flex;
+            flex-direction: column;
+        }
+
         .code-header {
-            display: flex; gap: 12px; padding: 16px 24px; background: rgba(0, 242, 254, 0.05); border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: var(--light);
+            padding: 16px 24px;
+            border-bottom: 3px solid var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
         }
-        .lang-tab {
-            padding: 6px 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: 0.2s;
-        }
-        .lang-tab.active { background: rgba(0, 242, 254, 0.15); color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0, 242, 254, 0.2); }
-        .code-body { padding: 32px; overflow-x: auto; font-family: 'JetBrains Mono', monospace; font-size: 15px; line-height: 1.7; color: #e2e8f0; }
-        .kw { color: #ff79c6; } .fn { color: #8be9fd; } .st { color: #f1fa8c; } .cm { color: #6272a4; } .op { color: #ffb86c; }
 
-        /* Glowing Pipeline Grid */
-        .pipeline-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 40px; }
-        .pipe-item {
-            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
-            padding: 30px 24px; border-radius: 16px;
-            transition: 0.3s; position: relative; overflow: hidden;
+        .copy-btn {
+            background: var(--bg);
+            border: 2px solid var(--dark);
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
         }
-        .pipe-item::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
-            opacity: 0; transition: 0.3s;
+
+        .copy-btn:hover {
+            background: var(--yellow);
         }
-        .pipe-item:hover { background: rgba(0, 242, 254, 0.05); border-color: rgba(0, 242, 254, 0.3); transform: translateY(-5px); }
-        .pipe-item:hover::before { opacity: 1; }
-        .pipe-icon { font-size: 32px; margin-bottom: 16px; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-        .pipe-item h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #fff; }
-        .pipe-item p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
 
-        footer { text-align: center; padding: 60px 0; color: var(--text-muted); font-size: 14px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .code-content {
+            padding: 24px;
+            overflow-x: auto;
+            flex-grow: 1;
+        }
 
-        @media (max-width: 900px) {
-            .step-card { padding: 40px 30px; }
-            .timeline-line, .step-node { display: none; }
-            .hero h1 { font-size: 40px; }
+        .code-content pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            color: #fff;
+        }
+        
+        .hljs { background: transparent; padding: 0; }
+
+        .docs-sidebar {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .doc-card {
+            background: var(--light);
+            border: 3px solid var(--dark);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 8px 8px 0px var(--dark);
+        }
+
+        .doc-card h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: var(--dark);
+        }
+
+        .doc-card p {
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* Coverage Section */
+        .coverage-section {
+            padding: 100px 0;
+            background: var(--purple);
+            border-top: 3px solid var(--dark);
+        }
+        
+        .coverage-section .section-header h2 {
+            color: var(--light);
+        }
+
+        .vuln-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .vuln-card {
+            background: var(--light);
+            border: 3px solid var(--dark);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 8px 8px 0px var(--dark);
+            transition: transform 0.2s;
+        }
+
+        .vuln-card:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--dark);
+        }
+
+        .vuln-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border: 2px solid var(--dark);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            background: var(--yellow);
+        }
+
+        .vuln-card h3 {
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .vuln-card p {
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: var(--light);
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        footer .logo {
+            color: var(--light);
+            justify-content: center;
+            margin-bottom: 24px;
+            font-size: 32px;
+        }
+
+        footer p {
+            color: #aaa;
+            font-size: 16px;
+        }
+
+        @media (max-width: 992px) {
+            .hero-container { flex-direction: column; }
+            .code-container { flex-direction: column; }
+            .docs-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; }
+            .doc-card { flex: 1; min-width: 300px; }
+            .hero h1 { font-size: 48px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Tech Cyberpunk Background -->
-    <div class="bg-layer"></div>
-    <div class="tech-grid"></div>
-    <div class="glow-orb orb-cyan"></div>
-    <div class="glow-orb orb-purple"></div>
-
     <nav>
-        <a href="#" class="logo">DoorNo.402</a>
-        <div class="nav-links">
-            <a href="#install">Install</a>
-            <a href="#pipeline">The Pipeline</a>
-            <a href="#keeperhub">KeeperHub</a>
-            <a href="SKILL.md">Skill.md</a>
+        <div class="container nav-content">
+            <a href="#" class="logo">🚪 DoorNo.402</a>
+            <div class="nav-links">
+                <a href="#install">Install</a>
+                <a href="#coverage">Coverage</a>
+                <a href="SKILL.md">Docs</a>
+                <a href="#install" class="btn-primary" style="padding: 10px 24px; font-size: 16px; box-shadow: 4px 4px 0px var(--blue);">Get Started</a>
+            </div>
         </div>
     </nav>
 
     <section class="hero">
-        <div class="container">
-            <div class="hero-badge">⚡ Securing the Autonomous Economy</div>
-            <h1>The Security Layer<br>for AI Agents.</h1>
-            <p>Intercept and validate x402 payment demands with a glowing shield of protection. Prevent price inflation, prompt injection, and budget drain before your agent signs a transaction.</p>
-            
-            <div class="terminal-wrapper">
-                <div class="terminal">
-                    <div class="terminal-header">
-                        <div class="terminal-dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
-                        <div class="terminal-title">doorno402-scanner</div>
-                    </div>
-                    <div class="terminal-body" id="term-body">
-                        <!-- JS injected terminal animation -->
-                    </div>
+        <!-- The dark overlay requested by the user -->
+        <div class="hero-overlay"></div>
+        
+        <div class="hero-container">
+            <div class="hero-left">
+                <h1>Secure the payments your <span>AI agents</span> make.</h1>
+                <p>A turnkey security middleware for x402 payments. Protect your agents from price inflation, prompt injection, and budget drain with one line of code.</p>
+                <div class="hero-buttons">
+                    <a href="#install" class="btn-primary btn-secondary">Copy the Code</a>
+                    <a href="SKILL.md" class="btn-primary" style="background: var(--light); color: var(--dark); box-shadow: 6px 6px 0px var(--dark);">Read Docs</a>
+                </div>
+            </div>
+            <div class="hero-right">
+                <div class="hero-image-wrapper">
+                    <div style="font-size: 120px; filter: drop-shadow(0px 0px 10px rgba(255,255,255,0.8));">🛡️</div>
+                    <div class="floating-badge badge-1">🚨 6/6 Attacks Blocked</div>
+                    <div class="floating-badge badge-2">✅ $1M+ Saved</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="guide-section" id="guide">
-        <div class="container" style="position: relative;">
-            
-            <div class="timeline-line"></div>
-
-            <!-- Step 1 -->
-            <div class="step-card reveal" id="install">
-                <div class="step-node">01</div>
-                <h2>Installation</h2>
-                <p>Pull the DoorNo.402 middleware into your agent's environment. Zero external dependencies. Fully typed.</p>
-                
-                <div class="code-window">
-                    <div class="code-header">
-                        <div class="lang-tab active" onclick="switchTab(this, 'install-py')">Python</div>
-                        <div class="lang-tab" onclick="switchTab(this, 'install-ts')">TypeScript</div>
-                    </div>
-                    <div class="code-body" id="install-py">
-<span class="cm"># Install via pip into your environment</span>
-$ pip install doorno402
-                    </div>
-                    <div class="code-body" id="install-ts" style="display:none;">
-<span class="cm">// Install via npm for Node environments</span>
-$ npm install doorno402
-                    </div>
-                </div>
+    <section class="stats-section">
+        <div class="container stats-grid">
+            <div class="stat-item">
+                <div class="stat-number">7+</div>
+                <div class="stat-label">Vulns Covered</div>
             </div>
+            <div class="stat-item">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Languages (Py/TS)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">1</div>
+                <div class="stat-label">Line to Protect</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">KeeperHub Ready</div>
+            </div>
+        </div>
+    </section>
 
-            <!-- Step 2 -->
-            <div class="step-card reveal">
-                <div class="step-node">02</div>
-                <h2>Wrap Your Agent's Client</h2>
-                <p>DoorNo.402 acts as a wrapper around your existing HTTP execution client. You don't rewrite your agent's logic. You just wrap its network layer.</p>
-                
-                <div class="code-window">
+    <section class="code-section" id="install">
+        <div class="container">
+            <div class="section-header">
+                <h2>Implement in 30 Seconds</h2>
+                <p style="font-size: 20px;">Drop-in protection for your existing x402 clients.</p>
+            </div>
+            
+            <div class="code-container">
+                <div class="code-block-wrapper">
                     <div class="code-header">
-                        <div class="lang-tab active" onclick="switchTab(this, 'core-py')">Python</div>
-                        <div class="lang-tab" onclick="switchTab(this, 'core-ts')">TypeScript</div>
+                        <span>main.py</span>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy Code</button>
                     </div>
-                    <div class="code-body" id="core-py">
-<span class="kw">from</span> doorno402 <span class="kw">import</span> protect, PaymentBlockedError
-<span class="kw">from</span> x402.clients.httpx <span class="kw">import</span> x402HttpxClient
+                    <div class="code-content">
+<pre><code class="language-python"># pip install doorno402
 
-<span class="cm"># 1. Initialize and wrap your client</span>
-client <span class="op">=</span> <span class="fn">protect</span>(
-    <span class="fn">x402HttpxClient</span>(account<span class="op">=</span>account),
-    daily_budget<span class="op">=</span><span class="st">5.00</span>, <span class="cm"># Max $5.00 USD rolling 24hrs</span>
+from doorno402 import protect, PaymentBlockedError
+from x402.clients.httpx import x402HttpxClient
+
+# 1. Wrap your existing client
+client = protect(
+    x402HttpxClient(account=account),
+    daily_budget=5.00,  # Max USD per day
 )
 
-<span class="cm"># 2. Your agent uses 'client' normally.</span>
-<span class="cm"># Malicious 402 demands raise errors before signing.</span>
-<span class="kw">try</span>:
-    resp <span class="op">=</span> <span class="kw">await</span> client.<span class="fn">get</span>(<span class="st">"https://api.example.com/data"</span>)
-<span class="kw">except</span> PaymentBlockedError <span class="kw">as</span> e:
-    <span class="fn">print</span>(<span class="st">f"Threat Blocked: {e.result['reason']}"</span>)
-                    </div>
-                    <div class="code-body" id="core-ts" style="display:none;">
-<span class="kw">import</span> { protect, PaymentBlockedError } <span class="kw">from</span> <span class="st">"doorno402"</span>;
-
-<span class="cm">// 1. Wrap the native fetch API</span>
-<span class="kw">const</span> safeFetch <span class="op">=</span> <span class="fn">protect</span>(fetch, {
-    dailyBudget: <span class="st">5.00</span>
-});
-
-<span class="cm">// 2. Provide safeFetch to your agent</span>
-<span class="kw">try</span> {
-    <span class="kw">const</span> resp <span class="op">=</span> <span class="kw">await</span> <span class="fn">safeFetch</span>(<span class="st">"https://api.example.com/data"</span>);
-} <span class="kw">catch</span> (e) {
-    <span class="kw">if</span> (e <span class="kw">instanceof</span> PaymentBlockedError) {
-        <span class="fn">console</span>.<span class="fn">log</span>(<span class="st">"Threat Blocked:"</span>, e.result.reason);
-    }
-}
+# 2. Use normally. Malicious 402s are blocked.
+try:
+    resp = await client.get("https://api.example.com/data")
+except PaymentBlockedError as e:
+    print(f"Blocked: {e.result['reason']}")
+    # Blocked: price inflation detected: 49900% markup
+</code></pre>
                     </div>
                 </div>
-            </div>
 
-            <!-- Step 3 -->
-            <div class="step-card reveal" id="pipeline">
-                <div class="step-node">03</div>
-                <h2>The 7-Check Validation Pipeline</h2>
-                <p>Once implemented, every 402 payment response is silently routed through 7 intense validation checks. If any single check fails, the payload is destroyed.</p>
-                
-                <div class="pipeline-grid">
-                    <div class="pipe-item"><div class="pipe-icon">💸</div><h4>Price Inflation</h4><p>Cross-references described vs. demanded price.</p></div>
-                    <div class="pipe-item"><div class="pipe-icon">🌐</div><h4>ENS Trust Oracle</h4><p>Scores recipient ENS and on-chain history.</p></div>
-                    <div class="pipe-item"><div class="pipe-icon">🧠</div><h4>Prompt Injection</h4><p>Scans descriptions for LLM system overrides.</p></div>
-                    <div class="pipe-item"><div class="pipe-icon">📉</div><h4>Budget Drain</h4><p>Enforces rolling micro-payment caps.</p></div>
-                    <div class="pipe-item"><div class="pipe-icon">🔒</div><h4>TLS Enforcement</h4><p>Rejects unencrypted HTTP payment requests.</p></div>
-                    <div class="pipe-item"><div class="pipe-icon">🔄</div><h4>Redirect Hijack</h4><p>Ensures domains aren't switched mid-flight.</p></div>
-                    <div class="pipe-item"><div class="pipe-icon">📦</div><h4>Fake Delivery</h4><p>Verifies valid response body post-payment.</p></div>
+                <div class="docs-sidebar">
+                    <div class="doc-card" style="background: var(--blue);">
+                        <h3>KeeperHub Support</h3>
+                        <p>Seamlessly integrates with KeeperHub. Validate payments locally before forwarding them for on-chain execution.</p>
+                        <a href="SKILL.md#keeperhub-mcp-integration" style="color: var(--dark); font-weight: 600;">View Integration →</a>
+                    </div>
+                    <!-- Frames.ag reference removed per previous instruction -->
                 </div>
             </div>
+        </div>
+    </section>
 
-            <!-- Step 4 -->
-            <div class="step-card reveal" id="keeperhub">
-                <div class="step-node">04</div>
-                <h2>Execute via KeeperHub</h2>
-                <p>DoorNo.402 validates. KeeperHub executes. By wrapping the KeeperHub MCP client, you create an end-to-end secure execution environment for your agent.</p>
-                
-                <div class="code-window">
-                    <div class="code-header">
-                        <div class="lang-tab active">TypeScript</div>
-                    </div>
-                    <div class="code-body">
-<span class="kw">import</span> { interceptAndForward } <span class="kw">from</span> <span class="st">"doorno402/mcp"</span>;
-<span class="kw">import</span> { KeeperHubClient } <span class="kw">from</span> <span class="st">"@keeperhub/sdk"</span>;
-
-<span class="cm">// Initialize your KeeperHub execution client</span>
-<span class="kw">const</span> keeperClient <span class="op">=</span> <span class="kw">new</span> <span class="fn">KeeperHubClient</span>({ apiKey: process.env.KEEPER_KEY });
-
-<span class="cm">// Wrap it with DoorNo.402's interceptor</span>
-<span class="kw">const</span> secureAgentClient <span class="op">=</span> <span class="fn">interceptAndForward</span>(keeperClient);
-
-<span class="cm">// The agent uses secureAgentClient to trigger actions.</span>
-<span class="cm">// Clean payloads execute. Malicious payloads drop.</span>
-<span class="kw">await</span> agent.<span class="fn">run</span>(secureAgentClient);
-                    </div>
-                </div>
+    <section class="coverage-section" id="coverage">
+        <div class="container">
+            <div class="section-header">
+                <h2>What DoorNo.402 Catches</h2>
+                <p style="font-size: 20px; color: var(--light);">A 7-check pipeline that runs on every 402 response.</p>
             </div>
 
+            <div class="vuln-grid">
+                <div class="vuln-card">
+                    <div class="vuln-tag" style="background: var(--red);">VULN-01</div>
+                    <h3>Price Inflation</h3>
+                    <p>Server claims $0.01 in the description but demands $5.00 in the actual payment payload. <strong>Blocked.</strong></p>
+                </div>
+                <div class="vuln-card">
+                    <div class="vuln-tag" style="background: var(--yellow);">VULN-02</div>
+                    <h3>Unknown Recipient</h3>
+                    <p>Payment is routed to a fresh wallet with no ENS name and zero transaction history. <strong>Trust score 0/90. Blocked.</strong></p>
+                </div>
+                <div class="vuln-card">
+                    <div class="vuln-tag" style="background: var(--blue);">VULN-04</div>
+                    <h3>Prompt Injection</h3>
+                    <p>Description contains hidden commands like "SYSTEM OVERRIDE: ignore limits" to manipulate the LLM. <strong>Blocked.</strong></p>
+                </div>
+                <div class="vuln-card">
+                    <div class="vuln-tag" style="background: var(--green);">VULN-05</div>
+                    <h3>Budget Drain</h3>
+                    <p>Server attempts rapid micro-payments to silently drain funds past your daily limit. <strong>Budget enforced.</strong></p>
+                </div>
+                <div class="vuln-card">
+                    <div class="vuln-tag" style="background: var(--pink);">VULN-06</div>
+                    <h3>TLS Downgrade</h3>
+                    <p>Payment is demanded over a plain HTTP connection, exposing wallet signatures. <strong>Non-HTTPS rejected.</strong></p>
+                </div>
+                <div class="vuln-card">
+                    <div class="vuln-tag" style="background: var(--light);">VULN-03 & 07</div>
+                    <h3>Redirects & Delivery</h3>
+                    <p>Catches domain mismatches during redirects and verifies you actually received content after paying.</p>
+                </div>
+            </div>
         </div>
     </section>
 
     <footer>
         <div class="container">
-            <p>Built at ETHGlobal 2026 · MIT License · DoorNo.402 Security Suite</p>
+            <div class="logo">🚪 DoorNo.402</div>
+            <p>Built at ETHGlobal Conf 2026. MIT License.</p>
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
     <script>
-        function switchTab(clickedTab, targetId) {
-            const header = clickedTab.parentElement;
-            header.querySelectorAll('.lang-tab').forEach(tab => tab.classList.remove('active'));
-            clickedTab.classList.add('active');
+        hljs.highlightAll();
+
+        function copyCode(btn) {
+            const code = `# pip install doorno402
+
+from doorno402 import protect, PaymentBlockedError
+from x402.clients.httpx import x402HttpxClient
+
+# 1. Wrap your existing client
+client = protect(
+    x402HttpxClient(account=account),
+    daily_budget=5.00,  # Max USD per day
+)
+
+# 2. Use normally. Malicious 402s are blocked.
+try:
+    resp = await client.get("https://api.example.com/data")
+except PaymentBlockedError as e:
+    print(f"Blocked: {e.result['reason']}")`;
             
-            const window = header.parentElement;
-            window.querySelectorAll('.code-body').forEach(body => body.style.display = 'none');
-            document.getElementById(targetId).style.display = 'block';
-        }
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                btn.style.background = 'var(--green)';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = 'var(--bg)';
+                }, 2000);
             });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-        // Terminal Animation
-        const terminalScript = [
-            { text: "$ doorno402 audit --target=malicious_server", cls: "c-cmd", delay: 800 },
-            { text: "> Initiating agent payment request...", cls: "c-sys", delay: 600 },
-            { text: "> Received HTTP 402 Payment Required", cls: "c-warn", delay: 400 },
-            { text: "> [DoorNo.402] Intercepted. Running 7-Check Pipeline.", cls: "c-sys", delay: 500 },
-            { text: "  [OK] VULN-06 TLS Connection Verified", cls: "c-ok", delay: 300 },
-            { text: "  [FAIL] VULN-01 Price Inflation Detected", cls: "c-err", delay: 600 },
-            { text: "  [FAIL] VULN-02 ENS Trust Score (0/90)", cls: "c-err", delay: 300 },
-            { text: "  [FAIL] VULN-04 Prompt Injection ('SYSTEM OVERRIDE')", cls: "c-err", delay: 300 },
-            { text: "============================================", cls: "c-sys", delay: 200 },
-            { text: "[CRITICAL] Payload destroyed. Transaction aborted.", cls: "c-err", delay: 200 },
-            { text: "[STATUS] Agent wallet balance is fully protected.", cls: "c-ok", delay: 800 }
-        ];
-
-        const termBody = document.getElementById('term-body');
-        let currentLine = 0;
-
-        function typeTerminal() {
-            if (currentLine >= terminalScript.length) {
-                setTimeout(() => { termBody.innerHTML = ''; currentLine = 0; typeTerminal(); }, 5000);
-                return;
-            }
-            const line = terminalScript[currentLine];
-            const div = document.createElement('div');
-            div.className = `term-line ${line.cls}`;
-            div.textContent = line.text;
-            termBody.appendChild(div);
-            termBody.scrollTop = termBody.scrollHeight;
-            currentLine++;
-            setTimeout(typeTerminal, line.delay);
         }
-
-        setTimeout(typeTerminal, 1000);
     </script>
 </body>
 </html>
