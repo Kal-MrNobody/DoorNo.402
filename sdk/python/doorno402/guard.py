@@ -76,12 +76,14 @@ class _GuardHook:
         mainnet_rpc_url: Optional[str] = None,
         budget_tracker: Optional[BudgetTracker] = None,
         raise_on_block: bool = False,
-    ):
+    ) -> None:
+        """Initialize the guard hook with optional configuration."""
         self.mainnet_rpc_url = mainnet_rpc_url
         self.budget_tracker = budget_tracker
         self.raise_on_block = raise_on_block
 
-    async def on_response(self, response):
+    async def on_response(self, response) -> None:
+        """Process the HTTP response and apply security policies before x402 handles it."""
         url = str(response.request.url)
 
         # ── VULN-06: TLS Enforcement ──
