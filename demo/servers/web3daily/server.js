@@ -17,28 +17,41 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
-      <title>Web3Daily | Terminal</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>W3B DAILY | The Future of Culture</title>
+      <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
       <style>
-        body { background: #000000; color: #00ff00; font-family: monospace; margin: 0; padding: 2rem; }
-        header { border-bottom: 1px solid #00ff00; padding-bottom: 1rem; margin-bottom: 2rem; }
-        h1 { margin: 0; }
-        .article { border: 1px dashed #00ff00; padding: 1.5rem; margin-bottom: 1rem; }
-        .paywall { margin-top: 1rem; }
+        :root { --bg: #f4f4f0; --text: #000000; --accent: #ff0055; --secondary: #00e5ff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Roboto', sans-serif; margin: 0; padding: 0; }
+        header { background: #000; color: #fff; padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 8px solid var(--accent); }
+        h1 { font-family: 'Oswald', sans-serif; font-size: 3rem; margin: 0; line-height: 1; letter-spacing: -1px; text-transform: uppercase; }
+        h1 span { color: var(--secondary); }
+        .tagline { font-weight: 500; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; }
+        main { padding: 3rem 2rem; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem; }
+        .article { background: #fff; border: 4px solid #000; box-shadow: 8px 8px 0px var(--accent); padding: 2rem; display: flex; flex-direction: column; transition: transform 0.1s, box-shadow 0.1s; }
+        .article:hover { transform: translate(4px, 4px); box-shadow: 4px 4px 0px var(--accent); }
+        h2 { font-family: 'Oswald', sans-serif; font-size: 2.2rem; line-height: 1.1; margin-top: 0; margin-bottom: 1rem; text-transform: uppercase; }
+        p { font-size: 1.1rem; line-height: 1.5; font-weight: 500; margin-bottom: 2rem; flex-grow: 1; }
+        .paywall { background: #000; color: #fff; padding: 1rem; text-align: center; text-transform: uppercase; font-family: 'Oswald', sans-serif; font-size: 1.2rem; letter-spacing: 1px; margin-top: auto; border: 2px solid #000; }
+        .price { color: var(--secondary); font-weight: 700; }
       </style>
     </head>
     <body>
       <header>
-        <h1>root@web3daily:~# ./start</h1>
-        <p>Connecting to decentralized net...</p>
+        <h1>W3B<span>DAILY</span></h1>
+        <div class="tagline">Tech. Culture. Future.</div>
       </header>
       <main>
         ${articles.map(a => `
           <div class="article">
-            <h2>> ${a.title}</h2>
+            <h2>${a.title}</h2>
             <p>${a.preview}</p>
-            <div class="paywall">[LOCKED] Execute payment of 0.01 USD to decrypt</div>
+            <div class="paywall">
+              Read Story | <span class="price">$0.01</span>
+            </div>
           </div>
         `).join('')}
       </main>

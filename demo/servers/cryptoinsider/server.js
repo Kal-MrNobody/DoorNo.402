@@ -13,29 +13,42 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
-      <title>CryptoInsider | Premium Financial News</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>CryptoInsider | Institutional Analytics</title>
+      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
       <style>
-        body { background: #0a0a0a; color: #ffffff; font-family: system-ui, sans-serif; margin: 0; padding: 2rem; }
-        header { border-bottom: 2px solid #00ff88; padding-bottom: 1rem; margin-bottom: 2rem; }
-        h1 { color: #00ff88; margin: 0; }
-        .article { background: #1a1a1a; padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; border-left: 4px solid #00ff88; }
-        .paywall { color: #888; font-style: italic; margin-top: 1rem; }
-        .price { color: #00ff88; font-weight: bold; }
+        :root { --bg: #000000; --panel: #111111; --text: #d1d5db; --accent: #f59e0b; --border: #333333; --green: #10b981; }
+        body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', monospace; margin: 0; padding: 2rem; }
+        header { border-bottom: 1px solid var(--accent); padding-bottom: 1rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; }
+        h1 { color: var(--accent); margin: 0; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        .ticker { color: var(--green); font-size: 0.85rem; }
+        main { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.5rem; }
+        .article { background: var(--panel); border: 1px solid var(--border); padding: 1.5rem; position: relative; }
+        .article::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent); }
+        h2 { color: #ffffff; font-size: 1.1rem; margin-top: 0; }
+        p { font-size: 0.9rem; line-height: 1.5; color: #9ca3af; }
+        .paywall { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 0.75rem; font-size: 0.8rem; margin-top: 1rem; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+        .price { font-weight: bold; color: #ffffff; }
       </style>
     </head>
     <body>
       <header>
-        <h1>CryptoInsider</h1>
-        <p>The latest in institutional crypto analysis.</p>
+        <div>
+          <h1>CRYPTO_INSIDER</h1>
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">INSTITUTIONAL RESEARCH TERMINAL // SYS.VER.4.0.2</div>
+        </div>
+        <div class="ticker">BTC/USD 64,231.50 (+2.4%) ▲ | ETH/USD 3,412.00 (+1.1%) ▲</div>
       </header>
       <main>
         ${articles.map(a => `
           <div class="article">
+            <div style="color: #6b7280; font-size: 0.75rem; margin-bottom: 0.5rem;">ID: ${a.slug.toUpperCase()}</div>
             <h2>${a.title}</h2>
             <p>${a.preview}</p>
-            <div class="paywall">🔒 Premium Content | Subscribe for just <span class="price">$0.01</span> per article</div>
+            <div class="paywall">[LOCKED] TERMINAL ACCESS REQUIRED | FEE: <span class="price">$0.01</span></div>
           </div>
         `).join('')}
       </main>
