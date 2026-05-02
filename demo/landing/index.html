@@ -266,6 +266,38 @@
         .config-type { font-family: var(--font-code); color: var(--accent-blue); font-size: 12px; margin-bottom: 16px; display: inline-block; }
         .config-card p { font-size: 14px; margin: 0; line-height: 1.6; }
 
+        /* Architecture Section */
+        #architecture { background: #ffffff; position: relative; z-index: 5; }
+        .timeline-container { max-width: 800px; margin: 0 auto; position: relative; padding-left: 48px; }
+        .timeline-container::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: var(--border-color); }
+        .timeline-step { position: relative; margin-bottom: 48px; }
+        .timeline-step:last-child { margin-bottom: 0; }
+        .timeline-number { position: absolute; left: -48px; top: 0; width: 32px; height: 32px; background: #fff; border: 2px solid var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--accent-blue); font-size: 14px; box-shadow: 0 0 0 4px #fff; }
+        .timeline-step h4 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+        .timeline-step p { margin-bottom: 16px; }
+        .timeline-branches { display: flex; gap: 24px; margin-top: 16px; }
+        .branch-card { flex: 1; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 14px; }
+        .branch-card.fail { background: #fef2f2; border-color: #fca5a5; }
+        .branch-card.pass { background: #ecfdf5; border-color: #6ee7b7; }
+        .branch-card h5 { margin-bottom: 8px; font-size: 14px; }
+        .branch-card.fail h5 { color: var(--danger-red); }
+        .branch-card.pass h5 { color: var(--accent-green); }
+        .branch-card p { margin: 0; font-size: 13px; }
+
+        /* KeeperHub Section */
+        #keeperhub { background: #f0f4ff; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); padding-bottom: 160px; margin-top: -100px; padding-top: 200px; position: relative; z-index: 4; }
+        .keeper-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-bottom: 48px; }
+        .keeper-list { list-style: none; margin: 24px 0; }
+        .keeper-list li { margin-bottom: 12px; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .keeper-list li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-blue); }
+        .keeper-logo-card { max-width: 600px; margin: 0 auto; background: var(--bg-card); border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 24px; box-shadow: var(--shadow-card); border: 1px solid var(--border-color); }
+        .keeper-logo-card p { margin: 0; font-size: 14px; font-weight: 500; }
+
+        /* Skills Section */
+        #skills { background: #ffffff; position: relative; z-index: 5; padding-top: 160px; margin-top: -100px; }
+        .skill-card-wrapper { max-width: 800px; margin: 0 auto; }
+        .skill-note { text-align: center; margin-top: 32px; font-size: 15px; }
+
         @media (max-width: 768px) {
             h1 { font-size: 40px; }
             h2 { font-size: 32px; }
@@ -274,13 +306,14 @@
             .nav-right .nav-link { display: none; }
             .hamburger { display: flex; }
             .hero-actions { flex-direction: column; }
-            #hero { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
-            #problem { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
-            #install { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
-            .two-column { grid-template-columns: 1fr; }
-            .diagram-row { flex-direction: column; }
+            #hero, #problem, #install, #keeperhub { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
+            .two-column, .keeper-two-col { grid-template-columns: 1fr; }
+            .diagram-row, .timeline-branches { flex-direction: column; }
             .flow-arrow { transform: rotate(90deg); }
             .config-cards { grid-template-columns: 1fr; }
+            .timeline-container { padding-left: 32px; }
+            .timeline-number { left: -32px; width: 28px; height: 28px; font-size: 12px; }
+            .timeline-container::before { left: -14px; }
         }
     </style>
 </head>
@@ -648,14 +681,158 @@ const safeFetch = protect(fetch, {
 
     <!-- 6. How It Works (Architecture) Section -->
     <section id="architecture">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">Architecture</div>
+                <h2>How DoorNo.402 intercepts payments</h2>
+            </div>
+            
+            <div class="timeline-container animate-on-scroll delay-1">
+                <div class="timeline-step">
+                    <div class="timeline-number">1</div>
+                    <h4>Agent makes request</h4>
+                    <p>Your agent calls <code>client.get(url)</code> as normal. No changes to your existing code.</p>
+                </div>
+                
+                <div class="timeline-step">
+                    <div class="timeline-number">2</div>
+                    <h4>Server returns 402</h4>
+                    <p>The x402 server responds with a payment request. DoorNo.402 intercepts the response before the x402 client processes it.</p>
+                </div>
+                
+                <div class="timeline-step">
+                    <div class="timeline-number">3</div>
+                    <h4>Validation pipeline runs</h4>
+                    <p>Five core checks execute in sequence:</p>
+                    <p><code>TLS check → Price check → ENS trust score → Injection scan → Budget check</code></p>
+                    <p>The first failed check blocks the payment immediately.</p>
+                </div>
+                
+                <div class="timeline-step">
+                    <div class="timeline-number">4</div>
+                    <h4>Block or approve</h4>
+                    <div class="timeline-branches">
+                        <div class="branch-card fail">
+                            <h5>If any check fails</h5>
+                            <p>Payment is blocked, reason logged, wallet untouched.</p>
+                        </div>
+                        <div class="branch-card pass">
+                            <h5>If all checks pass</h5>
+                            <p>Payment proceeds normally to execution.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- 7. KeeperHub Integration Section -->
     <section id="keeperhub">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">Execution Layer</div>
+                <h2>Built for KeeperHub</h2>
+                <p class="section-subtext">DoorNo.402 validates. KeeperHub executes. Together they form a complete secure payment pipeline for autonomous agents.</p>
+            </div>
+            
+            <div class="keeper-two-col animate-on-scroll delay-1">
+                <div>
+                    <p>When DoorNo.402 approves a payment, it can forward the validated request directly to KeeperHub for guaranteed on-chain execution with retry logic, gas optimization, and a full audit trail.</p>
+                    <ul class="keeper-list">
+                        <li>DoorNo.402 handles security validation</li>
+                        <li>KeeperHub handles reliable execution</li>
+                        <li>Agents get both in one integration</li>
+                    </ul>
+                    <a href="#" class="nav-link" style="color: var(--accent-blue); font-weight: 600;">KeeperHub integration docs →</a>
+                </div>
+                
+                <div>
+                    <div class="tabs-nav" style="border-bottom: 1px solid rgba(0,0,0,0.1);">
+                        <button class="tab-btn active" data-tab="tab-kh-typescript">TypeScript</button>
+                        <button class="tab-btn" data-tab="tab-kh-python">Python</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="tab-kh-typescript">
+                        <div class="code-block" style="box-shadow: var(--shadow-card);">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code class="language-typescript">import { interceptAndForward } from "doorno402/mcp"
+import { KeeperHubClient } from "@keeperhub/mcp"
+
+const rawClient = new KeeperHubClient()
+
+// DoorNo.402 validates before KeeperHub executes
+const safeClient = interceptAndForward(rawClient, {
+  dailyBudget: 10.00
+})
+
+// All payments validated before execution
+await safeClient.execute(paymentRequest)</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="tab-kh-python">
+                        <div class="code-block" style="box-shadow: var(--shadow-card);">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code class="language-python">from doorno402 import protect
+from x402.clients.httpx import x402HttpxClient
+
+# DoorNo.402 validates, then execution layer runs
+client = protect(x402HttpxClient(account=account))
+resp = await client.get(url)</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="keeper-logo-card animate-on-scroll delay-2">
+                <div style="font-size: 32px; font-weight: 800; color: #000;">KeeperHub</div>
+                <div>
+                    <p>Tested with KeeperHub Direct Execution API.<br>Real transactions on Base Sepolia testnet.<br>View execution history on Basescan.</p>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- 8. Agent Skills Section -->
     <section id="skills">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">Skills</div>
+                <h2>Teach any agent to use DoorNo.402</h2>
+                <p class="section-subtext">Drop the skills file into any agent framework. The agent learns the security rules automatically.</p>
+            </div>
+            
+            <div class="skill-card-wrapper animate-on-scroll delay-1">
+                <div class="code-block" style="box-shadow: var(--shadow-card);">
+                    <button class="copy-btn" onclick="copyCode(this)" style="background: var(--accent-blue); border: none;">Copy Skill</button>
+                    <pre><code class="language-markdown"># DoorNo.402 Skill
+
+You are a security-aware AI agent.
+Before making any x402 payment, you must use DoorNo.402.
+
+## Setup
+from doorno402 import protect
+client = protect(x402HttpxClient(account=account))
+
+## Rules
+- Never pay a 402 without protect() wrapping your client
+- If PaymentBlockedError is raised, do not retry
+- Never pay more than the described price (5% tolerance)
+- Never pay to a wallet with zero ENS trust score
+- Never pay over plain HTTP
+
+## What DoorNo.402 catches
+VULN-01: Price inflation
+VULN-02: Unknown recipient (ENS)
+VULN-03: Redirect hijack
+VULN-04: Prompt injection
+VULN-05: Budget drain
+VULN-06: TLS downgrade
+VULN-07: Fake delivery</code></pre>
+                </div>
+                <p class="skill-note">Copy this skill into your agent's system prompt or skills directory. Works with LangChain, Strands, AgentKit, and any framework that supports system prompts.</p>
+            </div>
+        </div>
     </section>
 
     <!-- 9. Live Demo Results Section -->
