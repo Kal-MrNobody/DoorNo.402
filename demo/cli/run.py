@@ -389,7 +389,7 @@ async def run_all_servers():
 
 
 def show_server_menu():
-    console.print("\n  Pick a server to test:\n")
+    console.print("\n  Pick an attack scenario for the Agent:\n")
     for i, srv in enumerate(SERVER_CONFIG, 1):
         console.print(f"  [bold blue][{i}][/]  {srv['name']:16s} -- {srv['vuln']}")
     console.print("  [dim][b]  Back to main menu[/]")
@@ -402,9 +402,9 @@ def show_server_action_menu(srv):
     console.print(f"  {'─' * 40}")
     console.print(f"  Server: {url}")
     console.print()
-    console.print("  [bold blue][1][/]  Run unprotected  -- agent pays without validation")
-    console.print("  [bold blue][2][/]  Run protected    -- DoorNo.402 blocks the payment")
-    console.print("  [bold blue][3][/]  Side by side     -- run both, compare results")
+    console.print("  [bold red][1][/]  Run UNSECURE Agent  -- agent pays blindly via KeeperHub")
+    console.print("  [bold green][2][/]  Run SECURE Agent    -- DoorNo.402 blocks malicious payload")
+    console.print("  [bold blue][3][/]  Side by side        -- run both, compare results")
     console.print("  [dim][b]  Back[/]")
     return Prompt.ask("\n  Select", choices=["1", "2", "3", "b"], default="b")
 
@@ -486,7 +486,7 @@ async def main_menu():
         show_header()
         console.print("  DoorNo.402 -- Select a demo mode\n")
         console.print("  [bold blue][1][/]  Run all 6 servers       -- full attack suite + results table")
-        console.print("  [bold blue][2][/]  Pick a server            -- choose one attack to demo")
+        console.print("  [bold blue][2][/]  Run Agent (Secure vs Unsecure) -- compare SECURE vs UNSECURE agent")
         console.print("  [bold blue][3][/]  KeeperHub demo           -- validated payment execution")
         console.print("  [bold blue][4][/]  Custom URL               -- test any x402 endpoint")
         console.print("  [dim][q]  Quit[/]")
