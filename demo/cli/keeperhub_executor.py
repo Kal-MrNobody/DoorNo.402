@@ -116,10 +116,15 @@ def extract_payment_details(payload: dict) -> dict:
     accepts = payload.get("accepts", [{}])
     req = accepts[0] if accepts else {}
     raw = int(req.get("maxAmountRequired", 0))
+    # Default to Base Sepolia USDC if asset is missing
+    token = req.get("asset", "")
+    if not token:
+        token = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+        
     return {
         "recipient": req.get("payTo", ""),
         "amount_usd": raw / 1_000_000,
-        "token_address": req.get("asset", ""),
+        "token_address": token,
         "description": req.get("description", ""),
         "network": req.get("network", ""),
     }
