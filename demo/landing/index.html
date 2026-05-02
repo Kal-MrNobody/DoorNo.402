@@ -123,15 +123,28 @@
             position: relative;
             min-height: 100vh;
             padding-top: 160px; /* offset for nav */
-            background: linear-gradient(180deg, #dbeafe 0%, var(--bg-page) 100%);
+            background: linear-gradient(135deg, #dbeafe 0%, #f0f4ff 40%, #ede9fe 70%, #dbeafe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
             clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
             padding-bottom: 200px;
             text-align: center;
+            overflow: hidden;
         }
+        #hero::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+            background-size: 60px 60px; z-index: 0; pointer-events: none;
+        }
+        .hero-shape { position: absolute; border-radius: 50%; background: #2563eb; opacity: 0.04; filter: blur(80px); z-index: 0; pointer-events: none; }
+        .hero-shape-1 { width: 600px; height: 600px; top: -100px; right: -100px; animation: float 20s ease-in-out infinite alternate; }
+        .hero-shape-2 { width: 400px; height: 400px; bottom: 0; left: -100px; animation: float 25s ease-in-out infinite alternate-reverse; }
+        .hero-shape-3 { width: 300px; height: 300px; top: 100px; left: 10%; animation: float 30s ease-in-out infinite alternate; }
         
         .hero-content {
             max-width: 800px; margin: 0 auto;
             display: flex; flex-direction: column; align-items: center;
+            position: relative; z-index: 1;
         }
 
         .hero-badge {
@@ -376,6 +389,9 @@
 
     <!-- 1. Hero Section -->
     <section id="hero">
+        <div class="hero-shape hero-shape-1"></div>
+        <div class="hero-shape hero-shape-2"></div>
+        <div class="hero-shape hero-shape-3"></div>
         <div class="container hero-content animate-on-scroll">
             <div class="hero-badge">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
