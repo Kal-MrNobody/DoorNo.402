@@ -38,13 +38,150 @@
     .btn-primary { background: var(--blue); color: white; }
     .btn-outline { border: 2px solid var(--blue); color: var(--blue); background: transparent; }
     
-    section { padding: 5rem 0; }
+    /* Layout */
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-4 { gap: 1rem; }
+    .gap-8 { gap: 2rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    
+    /* Nav */
+    nav { padding: 1.5rem 0; background: var(--bg); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+    .nav-links a { color: var(--text); text-decoration: none; font-weight: 500; }
+    .logo { font-size: 1.5rem; font-weight: 900; color: var(--blue); text-decoration: none; }
+    
+    /* Hero */
+    .hero { padding: 8rem 0 6rem; text-align: center; }
+    .hero h1 { font-size: 4rem; margin-bottom: 1rem; color: var(--text); letter-spacing: -0.05em; line-height: 1.1; }
+    .hero p { font-size: 1.25rem; color: #475569; max-width: 800px; margin: 0 auto 2.5rem; }
+    .hero-buttons { display: flex; justify-content: center; gap: 1rem; margin-bottom: 4rem; }
+    
+    .floating-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--red);
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto 3rem;
+      text-align: left;
+      font-family: monospace;
+      font-size: 0.9rem;
+      transform: translateY(0);
+      animation: float 6s ease-in-out infinite;
+    }
+    .floating-card span.red { color: var(--red); font-weight: bold; }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    
+    .stats { display: flex; justify-content: center; gap: 4rem; border-top: 1px solid var(--border); padding-top: 3rem; }
+    .stat-item h3 { font-size: 2.5rem; color: var(--blue); margin: 0; }
+    .stat-item p { margin: 0; color: #64748b; font-weight: 500; }
+    
+    /* Problem */
+    .problem { background: var(--card-bg); }
+    .problem h2 { font-size: 2.5rem; text-align: center; margin-bottom: 0.5rem; }
+    .problem > p { text-align: center; color: #64748b; margin-bottom: 4rem; font-size: 1.2rem; }
+    
+    .code-window { background: #1e293b; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    .code-header { background: #0f172a; padding: 0.75rem 1rem; color: #94a3b8; font-family: monospace; font-size: 0.85rem; }
+    .code-body { padding: 1rem; margin: 0; font-size: 0.9rem; overflow-x: auto; }
+    
+    .diagram-simple { background: var(--bg); padding: 2rem; border-radius: 8px; text-align: center; font-weight: bold; color: var(--text); border: 1px solid var(--border); margin-top: 2rem; }
+    .diagram-simple span { color: var(--red); }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
 </head>
 <body>
-  <!-- Content will go here -->
+  
+  <nav>
+    <div class="container flex justify-between items-center">
+      <a href="#" class="logo">DoorNo.402</a>
+      <div class="nav-links flex gap-8 items-center">
+        <a href="#how">How it works</a>
+        <a href="#install">Install</a>
+        <a href="#vulns">Vulnerabilities</a>
+        <a href="#keeperhub">KeeperHub</a>
+        <a href="#github">GitHub</a>
+        <a href="#install" class="btn btn-primary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <h1>Secure the Payments Your Agents Make</h1>
+      <p>DoorNo.402 intercepts x402 payment requests before your agent pays them. One line of code protects against price inflation, prompt injection, budget drain, and unknown recipients.</p>
+      
+      <div class="hero-buttons">
+        <a href="#install" class="btn btn-primary">Install Now</a>
+        <a href="#demo" class="btn btn-outline">See the Demo</a>
+      </div>
+      
+      <div class="floating-card">
+        [DoorNo.402] <span class="red">BLOCKED</span> -- description: $0.01,<br>demanded: $5.00, inflation: 49,900%
+      </div>
+      
+      <div class="stats">
+        <div class="stat-item">
+          <h3>7</h3>
+          <p>Vulnerabilities Covered</p>
+        </div>
+        <div class="stat-item">
+          <h3>2</h3>
+          <p>Languages (Python + TS)</p>
+        </div>
+        <div class="stat-item">
+          <h3>1</h3>
+          <p>Line of Code to Protect</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="problem" id="problem">
+    <div class="container">
+      <h2>x402 has no security layer</h2>
+      <p>Any server can lie about the price. Your agent pays whatever it's told.</p>
+      
+      <div class="grid-2">
+        <div class="code-window">
+          <div class="code-header">Vulnerable Agent (No Protection)</div>
+          <pre class="code-body"><code class="language-python">from x402.clients.httpx import x402HttpxClient
+
+# This client will automatically pay whatever 
+# the 402 response demands.
+client = x402HttpxClient(account=account)
+
+# Fetches an article described as "$0.01"
+resp = await client.get("https://malicious.com/api/news")</code></pre>
+        </div>
+        <div class="code-window">
+          <div class="code-header">The Result</div>
+          <pre class="code-body"><code class="language-python"># Server returns a 402 response:
+{
+  "description": "Article access -- 0.01 USD",
+  "maxAmountRequired": "5000000" # $5.00 actually demanded!
+}
+
+# The agent blindly signs and executes a $5.00 tx.
+# You just got robbed.</code></pre>
+        </div>
+      </div>
+      
+      <div class="diagram-simple">
+        Agent ➔ Malicious 402 Response ➔ Pays $5.00 ➔ <span>Robbed</span>
+      </div>
+    </div>
+  </section>
+
   <script>
     hljs.highlightAll();
   </script>
