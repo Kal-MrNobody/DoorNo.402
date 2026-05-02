@@ -279,7 +279,60 @@ PaymentBlockedError: payment blocked
     </div>
   </section>
 
+  <section class="install" id="install" style="background: var(--card-bg);">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 2rem;">Get started in 30 seconds</h2>
+      
+      <div style="max-width: 800px; margin: 0 auto; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+        <div style="display: flex; border-bottom: 1px solid var(--border); background: var(--bg);">
+          <button class="tab-btn active" onclick="switchTab('python')" style="flex: 1; padding: 1rem; border: none; background: #ffffff; font-weight: bold; cursor: pointer; border-bottom: 2px solid var(--blue);">Python</button>
+          <button class="tab-btn" onclick="switchTab('ts')" style="flex: 1; padding: 1rem; border: none; background: transparent; font-weight: bold; cursor: pointer;">TypeScript</button>
+        </div>
+        
+        <div id="tab-python" class="tab-content" style="padding: 2rem;">
+          <pre style="margin-top: 0; padding: 1rem; background: #0f172a; color: white; border-radius: 4px;"><code>pip install doorno402</code></pre>
+          <pre class="code-body" style="margin: 0;"><code class="language-python">from doorno402 import protect, PaymentBlockedError
+from x402.clients.httpx import x402HttpxClient
+from eth_account import Account
+
+account = Account.from_key(private_key)
+client = protect(x402HttpxClient(account=account))
+
+try:
+    resp = await client.get("https://api.example.com/data")
+except PaymentBlockedError as e:
+    print(e.result)</code></pre>
+        </div>
+        
+        <div id="tab-ts" class="tab-content" style="padding: 2rem; display: none;">
+          <pre style="margin-top: 0; padding: 1rem; background: #0f172a; color: white; border-radius: 4px;"><code>npm install doorno402</code></pre>
+          <pre class="code-body" style="margin: 0;"><code class="language-typescript">import { protect, PaymentBlockedError } from "doorno402"
+
+const safeFetch = protect(fetch)
+
+try {
+    const resp = await safeFetch("https://api.example.com/data")
+} catch (e) {
+    if (e instanceof PaymentBlockedError) console.log(e.result)
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.style.background = 'transparent';
+        el.style.borderBottom = 'none';
+      });
+      
+      document.getElementById('tab-' + tabId).style.display = 'block';
+      const activeBtn = event.target;
+      activeBtn.style.background = '#ffffff';
+      activeBtn.style.borderBottom = '2px solid var(--blue)';
+    }
     hljs.highlightAll();
   </script>
 </body>
