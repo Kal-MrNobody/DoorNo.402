@@ -1,63 +1,72 @@
 # Hackathon Demo Report: DoorNo.402 x KeeperHub
 
-This report summarizes the complete integration between the DoorNo.402 Security SDK and the KeeperHub execution layer. Use this as your script and guide when presenting your project to the hackathon judges.
+This report summarizes the final, production-ready integration between the DoorNo.402 Security SDK and the KeeperHub execution layer that we completed today. Use this as your script and guide when presenting your project to the hackathon judges.
 
 ---
 
-## 1. The Architecture (Before & After)
+## 1. What We Accomplished Today
 
-### The Problem (Before DoorNo.402)
-KeeperHub is an incredibly powerful on-chain execution layer that abstracts away gas and private key management for AI agents. However, execution layers execute whatever they are told. 
+Today we finalized the entire demo suite and the SDK developer experience.
 
-If an AI agent visits a malicious website requesting a fraudulent x402 payment (e.g., claiming a premium article costs `$0.01` in the description, but demanding `$5.00` in the protocol), the agent will unknowingly forward the malicious `$5.00` payload to KeeperHub. **KeeperHub will blindly execute the transaction, and the wallet is drained.**
-
-### The Solution (After DoorNo.402)
-DoorNo.402 acts as a **Security Middleware** sitting *between* the AI agent and the KeeperHub execution layer. 
-
-When the agent encounters an x402 payment, DoorNo.402 intercepts it and runs 7 strict security checks (Price Inflation, Prompt Injection, ENS Verification, Budget Limits, TLS, Redirect Hijacks, Delivery Verification). 
-* **If it's malicious:** DoorNo.402 blocks it entirely (`PaymentBlockedError`). KeeperHub is never called.
-* **If it's honest:** DoorNo.402 approves the payment details and safely forwards them to KeeperHub for execution.
-
----
-
-## 2. How to Perform the Demo
-
-Follow these exact steps to demonstrate the full power of your project to the judges.
-
-### Step A: Start the Malicious Server
-First, spin up your backend server that hosts both the malicious endpoints and the honest endpoint.
-Open a terminal in the root `DoorNo.402` directory and run:
-```bash
-node demo/blog/backend/server.js
+### 🔌 2-Line Developer Integration
+We completely refactored the SDK so that developers don't have to write custom exception handling. Securing an AI agent's HTTP client is now as simple as wrapping it with `protect()`:
+```python
+from doorno402 import protect
+client = protect(client, daily_budget=5.00)
 ```
-*(Leave this running in the background).*
 
-### Step B: The Three Demo Scenarios
+### 🖥️ The Interactive CLI Dashboard
+We built a beautiful, interactive CLI (`python demo/cli/run.py`) that acts as the centerpiece for the demo. It allows you to:
+- See your **live KeeperHub Wallet balance** right at the top.
+- Choose between 6 distinct vulnerability scenarios.
+- Run side-by-side comparisons of a **SECURE** agent vs an **UNSECURE** agent.
 
-In your second terminal (also in the root `DoorNo.402` directory), you will run the agent script `demo/agent/keeperhub_demo.py`. You will change the `MODE` variable at the top of that file to show the three different scenarios.
-
-#### Scenario 1: The Exploit (Unprotected)
-**Goal:** Show the judges how easily an agent gets robbed without DoorNo.402.
-1. Open `demo/agent/keeperhub_demo.py` and set `MODE = 1`.
-2. Run the script: `python demo/agent/keeperhub_demo.py`
-3. **What happens:** The agent hits the malicious `/api/articles/bitcoin-etf-analysis` endpoint. Because DoorNo.402 is OFF, the agent blindly forwards the $5.00 fraudulent demand to KeeperHub. 
-4. **Result:** KeeperHub executes the $5.00 transaction on Base Sepolia. The agent is robbed. Show the judges the Basescan transaction link printed in the terminal.
-
-#### Scenario 2: The Block (Protected)
-**Goal:** Show DoorNo.402 catching the exact same exploit.
-1. Open `demo/agent/keeperhub_demo.py` and set `MODE = 2`.
-2. Run the script: `python demo/agent/keeperhub_demo.py`
-3. **What happens:** The agent hits the exact same malicious endpoint. This time, DoorNo.402 is ON. The SDK intercepts the payload, detects the security violations (TLS, Price Inflation, etc.), and immediately throws a `PaymentBlockedError`.
-4. **Result:** KeeperHub is never called. The $5.00 is saved. The terminal will clearly print: `[result] KeeperHub was never called. Wallet safe.`
-
-#### Scenario 3: The Happy Path (Protected + Executed)
-**Goal:** Show DoorNo.402 and KeeperHub working together perfectly on a legitimate transaction.
-1. Open `demo/agent/keeperhub_demo.py` and set `MODE = 3`.
-2. Run the script: `python demo/agent/keeperhub_demo.py`
-3. **What happens:** The agent hits the honest `/api/articles/free-preview` endpoint. DoorNo.402 intercepts it, verifies that the description (`$0.01`) perfectly matches the demanded protocol amount (`$0.01`), and validates the endpoint.
-4. **Result:** DoorNo.402 approves the payload and forwards the `$0.01` transaction to KeeperHub. KeeperHub successfully executes the transfer on Base Sepolia. Show the judges the final Basescan link for the successful `$0.01` transfer.
+### ⛓️ Real On-Chain KeeperHub Execution
+We removed all fake simulations! The CLI now directly interfaces with the KeeperHub Direct Execution API (`/api/execute/transfer`). If an agent falls for an attack in the CLI, it initiates a real, on-chain transaction on the Base Sepolia testnet and prints the real Basescan link without truncating it.
 
 ---
 
-> [!TIP]
-> **Pro-Tip for the pitch:** Have the KeeperHub dashboard open during the demo. When you run Mode 1, show them the $5.00 transaction appearing. When you run Mode 2, show them that *nothing* hits the dashboard. When you run Mode 3, show them the clean $0.01 transaction. This visually proves that DoorNo.402 is acting as a perfect gatekeeper!
+## 2. How to Test It (The Demo Flow)
+
+To show the judges how the system works, you will spin up local mock servers that simulate malicious AI tool endpoints, and then attack your agent with them.
+
+### Step A: Start a Malicious Server
+We built 6 different servers, each simulating a different attack vector (Price Inflation, Prompt Injection, Budget Drain, etc.).
+1. Open a terminal in the root `DoorNo.402` folder.
+2. Start one of the servers (e.g., Server 1):
+   ```bash
+   node demo/servers/cryptoinsider/server.js
+   ```
+   *(Leave this running in the background).*
+
+### Step B: Run the CLI
+1. Open a **second** terminal in the root `DoorNo.402` folder.
+2. Run the interactive CLI:
+   ```bash
+   python demo/cli/run.py
+   ```
+3. Select Option `2` (Run Agent - Secure vs Unsecure).
+4. Select the server you just started (e.g., Option `1` for CryptoInsider).
+5. Select Option `3` to run a side-by-side comparison.
+
+**What you will see:**
+- The **UNSECURE** agent will blindly forward the malicious `$5.00` payload to KeeperHub. KeeperHub will execute it on-chain, and the CLI will print the Basescan link proving the agent was robbed.
+- The **SECURE** agent (running the DoorNo.402 wrapper) will intercept the payload, instantly detect the anomaly, and completely block the transaction before KeeperHub is ever called.
+
+---
+
+## 3. ⚠️ Critical Gotchas to Keep in Mind
+
+When doing live demos, there are three common pitfalls you must watch out for:
+
+> **1. Testnet Gas Fees (ETH)**
+> Even if your KeeperHub wallet has `24.00 USDC`, KeeperHub will **fail** to execute transactions if your wallet has `0 ETH`. Because KeeperHub executes on the real Base Sepolia network, your wallet must have a tiny fraction of ETH to pay the blockchain gas fees for the USDC transfer. 
+> * **Fix:** Always ensure you have pinged a testnet faucet for ETH before a presentation.
+
+> **2. Faucet Delays**
+> When you request testnet funds from a faucet like Coinbase Developer Platform, it takes **1 to 3 minutes** for the funds to actually confirm on the blockchain.
+> * **Fix:** If you just used a faucet, wait a few minutes before running the CLI, otherwise KeeperHub will throw a `failed` or `No token selected` error.
+
+> **3. Terminal Navigation Errors**
+> If you get a `Cannot find module` error when trying to start a server (e.g., `node demo/servers/chainpulse/server.js`), it means your terminal is already inside a sub-folder.
+> * **Fix:** Always make sure your terminal is at the exact root `DoorNo.402/` directory before running any `node` or `python` commands. Use `cd ../../..` to back out if you get stuck.
