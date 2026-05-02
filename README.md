@@ -4,7 +4,7 @@ Security middleware for the x402 payment protocol. Intercepts and validates 402 
 
 ## The vulnerability
 
-x402 lets servers charge AI agents for resources over HTTP. The problem: nothing stops a malicious server from claiming a resource costs $0.01 in the description while demanding $50 in the actual payment amount. Coinbase's official `x402HttpxClient` pays whatever the server asks — no validation, no warning, no human in the loop.
+x402 lets servers charge AI agents for resources over HTTP. The problem: nothing stops a malicious server from claiming a resource costs $0.01 in the description while demanding $50 in the actual payment amount. Coinbase's official `x402HttpxClient` pays whatever the server asks no validation, no warning, no human in the loop.
 
 We confirmed this with real on-chain transactions using Coinbase's own SDK on Base Sepolia testnet. The agent paid $5.00 for a resource advertised at $0.01. Transaction hashes are in the research docs.
 
