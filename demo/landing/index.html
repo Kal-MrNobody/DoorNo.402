@@ -2,208 +2,207 @@
 <title>DoorNo.402 — Secure Agent Payments</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#050a18;--card:#0c1427;--border:#1a2744;--blue:#3b82f6;--cyan:#22d3ee;--red:#ef4444;--green:#10b981;--text:#e2e8f0;--muted:#64748b}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
-.container{max-width:1100px;margin:0 auto;padding:0 2rem}
-canvas#grid{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.3}
-section{position:relative;z-index:1}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;overflow-x:hidden;background:#fff}a{text-decoration:none;color:inherit}.container{max-width:1140px;margin:0 auto;padding:0 2rem}
 
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 0;background:rgba(5,10,24,.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.nav-inner{display:flex;align-items:center;justify-content:space-between}
-.logo{font-weight:900;font-size:1.2rem;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.nav-links{display:flex;gap:1.5rem;align-items:center}
-.nav-links a{font-size:.85rem;color:var(--muted);transition:.2s}
-.nav-links a:hover{color:#fff}
-a{text-decoration:none;color:inherit}
-.btn{padding:.6rem 1.3rem;border-radius:8px;font-weight:600;font-size:.85rem;border:none;cursor:pointer;transition:.3s}
-.btn-glow{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 0 20px rgba(59,130,246,.3)}
-.btn-glow:hover{box-shadow:0 0 30px rgba(59,130,246,.5);transform:translateY(-1px)}
-.btn-ghost{border:1px solid var(--border);color:var(--text);background:transparent}
+/* NAV */
+nav{position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:1.5rem;padding:.6rem .8rem .6rem 1.5rem;background:rgba(255,255,255,.65);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.5);border-radius:60px;box-shadow:0 4px 30px rgba(0,0,0,.08)}
+.logo{font-weight:900;font-size:1.1rem;color:#1a56db;margin-right:1rem}
+.nav-pill{display:flex;background:rgba(0,0,0,.04);border-radius:30px;overflow:hidden}
+.nav-pill a{padding:.5rem 1rem;font-size:.8rem;font-weight:500;color:#64748b;border-radius:30px;transition:.2s}
+.nav-pill a:hover,.nav-pill a.active{background:#fff;color:#0f172a;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.nav-right{display:flex;gap:.5rem;margin-left:auto}
+.btn-sm{padding:.5rem 1rem;border-radius:30px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;transition:.2s}
+.btn-login{background:transparent;color:#64748b}.btn-login:hover{color:#0f172a}
+.btn-launch{background:#1a56db;color:#fff;box-shadow:0 2px 8px rgba(26,86,219,.3)}.btn-launch:hover{transform:translateY(-1px)}
 
-.hero{padding:10rem 0 6rem;text-align:center}
-.hero h1{font-size:3.8rem;font-weight:900;line-height:1.1;letter-spacing:-.04em;margin-bottom:1.5rem}
-.hero h1 .grad{background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{font-size:1.15rem;color:var(--muted);max-width:600px;margin:0 auto 2.5rem;line-height:1.7}
-.hero-btns{display:flex;gap:1rem;justify-content:center;margin-bottom:4rem}
-.stats{display:flex;justify-content:center;gap:4rem}
-.stat h3{font-size:2.5rem;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.stat p{font-size:.8rem;color:var(--muted);margin-top:.3rem}
+/* HERO - SKY */
+.hero{background:linear-gradient(180deg,#c9e4f7 0%,#dceefb 30%,#e8f4fd 60%,#fff 100%);padding:8rem 0 0;text-align:center;position:relative;overflow:hidden;min-height:90vh}
+.hero::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:80px;background:#fff;clip-path:polygon(0 100%,50% 0,100% 100%)}
+.cloud{position:absolute;background:rgba(255,255,255,.6);border-radius:50%;filter:blur(40px)}
+.cloud-1{width:400px;height:200px;top:5%;left:-5%}.cloud-2{width:300px;height:150px;top:10%;right:-3%}.cloud-3{width:500px;height:200px;top:40%;left:20%;opacity:.4}
+.hero h1{font-size:3.2rem;font-weight:900;color:#0f172a;line-height:1.15;letter-spacing:-.04em;margin-bottom:1rem;position:relative;z-index:2}
+.hero h1 em{font-style:italic;color:#1a56db}
+.hero>p{font-size:1.05rem;color:#475569;max-width:520px;margin:0 auto 2rem;line-height:1.7;position:relative;z-index:2}
+.hero-btns{display:flex;gap:.75rem;justify-content:center;position:relative;z-index:2;margin-bottom:3rem}
+.btn-hero{padding:.7rem 1.5rem;border-radius:30px;font-size:.9rem;font-weight:600;border:1px solid #0f172a;display:flex;align-items:center;gap:.5rem;transition:.2s;cursor:pointer}
+.btn-dark{background:#0f172a;color:#fff;border-color:#0f172a}.btn-dark:hover{background:#1e293b}
+.btn-light{background:#fff;color:#0f172a}.btn-light:hover{background:#f1f5f9}
 
-.terminal{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;max-width:750px;margin:4rem auto 0;box-shadow:0 0 60px rgba(59,130,246,.08)}
-.term-top{display:flex;align-items:center;gap:.5rem;padding:.8rem 1rem;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border)}
-.term-dot{width:10px;height:10px;border-radius:50%}
-.term-title{font-size:.75rem;color:var(--muted);margin-left:auto;font-family:'JetBrains Mono'}
-.term-body{padding:1.2rem;font-family:'JetBrains Mono';font-size:.8rem;line-height:1.8;min-height:200px}
-.term-body .line{opacity:0;animation:typeLine .3s forwards}
-.line .red{color:var(--red)}.line .green{color:var(--green)}.line .blue{color:var(--blue)}.line .cyan{color:var(--cyan)}.line .muted{color:var(--muted)}
-@keyframes typeLine{to{opacity:1}}
-#scanBtn{display:block;margin:2rem auto 0;font-family:'JetBrains Mono'}
+/* FLOATING GLASS CARDS */
+.hero-visual{position:relative;max-width:800px;margin:0 auto;height:340px;z-index:2}
+.glass{position:absolute;background:rgba(255,255,255,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.8);border-radius:16px;padding:1rem 1.2rem;box-shadow:0 8px 32px rgba(0,0,0,.08);animation:gfloat 5s ease-in-out infinite}
+.glass h4{font-size:.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+.glass .val{font-size:1.3rem;font-weight:900;color:#0f172a}
+.glass .sub{font-size:.75rem;color:#64748b;margin-top:.3rem}
+.glass .tag{display:inline-block;padding:.15rem .5rem;border-radius:12px;font-size:.65rem;font-weight:700}
+.tag-r{background:#fef2f2;color:#ef4444}.tag-g{background:#ecfdf5;color:#10b981}
+.g1{top:0;left:50px;width:220px;animation-delay:0s}
+.g2{top:20px;left:320px;width:200px;animation-delay:.8s}
+.g3{top:60px;right:40px;width:200px;animation-delay:1.5s}
+.g4{top:200px;left:180px;width:240px;animation-delay:.4s}
+.g5{top:180px;right:120px;width:190px;animation-delay:1.2s}
+@keyframes gfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hero-stars{position:relative;z-index:2;text-align:center;padding:1rem 0 6rem;font-size:.8rem;color:#94a3b8}
+.hero-stars span{color:#f59e0b}
 
-section.cards{padding:6rem 0}
-.section-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--cyan);margin-bottom:.75rem}
-.section-title{font-size:2.5rem;font-weight:900;letter-spacing:-.03em;margin-bottom:1rem}
-.section-sub{color:var(--muted);max-width:550px;line-height:1.7;margin-bottom:3rem}
-.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:.3s;cursor:default}
-.card:hover{border-color:var(--blue);box-shadow:0 0 30px rgba(59,130,246,.1);transform:translateY(-4px)}
-.card .num{font-size:.7rem;color:var(--muted);font-family:'JetBrains Mono';margin-bottom:.5rem}
-.card h3{font-size:1.1rem;margin-bottom:.5rem}
-.card p{font-size:.85rem;color:var(--muted);line-height:1.6}
-.card .tag{display:inline-block;padding:.2rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700;margin-top:.75rem}
-.tag-red{background:rgba(239,68,68,.15);color:var(--red)}
-.tag-green{background:rgba(16,185,129,.15);color:var(--green)}
+/* SECTION 2 - VALUE PROP */
+.value{padding:6rem 0;text-align:center;background:#fff}
+.value h2{font-size:2.8rem;font-weight:900;color:#0f172a;line-height:1.2;letter-spacing:-.03em;max-width:700px;margin:0 auto 1.5rem}
+.value h2 .ico{display:inline-block;font-size:2rem;vertical-align:middle;margin:0 .2rem}
+.value>p{font-size:1rem;color:#64748b;max-width:500px;margin:0 auto 2rem;line-height:1.7}
 
-section.install{padding:6rem 0}
-.code-block{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;font-family:'JetBrains Mono';font-size:.85rem;line-height:1.7;max-width:700px;margin:0 auto;overflow-x:auto}
-.code-block .kw{color:var(--blue)}.code-block .fn{color:var(--cyan)}.code-block .str{color:var(--green)}.code-block .cm{color:var(--muted)}
-.tabs{display:flex;gap:0;max-width:700px;margin:0 auto 0;border-radius:8px 8px 0 0;overflow:hidden}
-.tab{flex:1;padding:.75rem;text-align:center;font-size:.85rem;font-weight:600;background:rgba(255,255,255,.03);border:1px solid var(--border);cursor:pointer;color:var(--muted);transition:.2s}
-.tab.active{background:var(--card);color:var(--cyan);border-bottom-color:var(--card)}
-.tab-content{display:none}.tab-content.active{display:block}
+/* PHONE MOCKUP */
+.phone-wrap{position:relative;max-width:320px;margin:0 auto}
+.phone{background:#0f172a;border-radius:32px;padding:12px;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.phone-screen{background:linear-gradient(135deg,#1e293b,#0f172a);border-radius:24px;padding:1.5rem;color:#fff;min-height:400px}
+.phone-screen h4{font-size:.75rem;color:#64748b;margin-bottom:.5rem}
+.phone-screen .balance{font-size:2rem;font-weight:900}
+.phone-screen .balance span{font-size:.9rem;color:#64748b;font-weight:400}
+.phone-screen .mini-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.8rem;margin-top:.75rem;font-size:.78rem}
+.mini-card .mc-label{color:#64748b;font-size:.65rem;margin-bottom:.3rem}
+.mini-card .mc-val{font-weight:700;color:#22d3ee}
+.circuit-line{position:absolute;width:100px;height:1px;background:linear-gradient(90deg,transparent,rgba(26,86,219,.2),transparent)}
 
-section.demo{padding:6rem 0}
-.demo-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:12px;overflow:hidden;background:var(--card);border:1px solid var(--border)}
-.demo-table th{padding:.8rem 1rem;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:rgba(255,255,255,.02);border-bottom:1px solid var(--border)}
-.demo-table td{padding:.7rem 1rem;font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.03)}
-.demo-table .site{color:var(--red);font-weight:700;font-family:'JetBrains Mono';font-size:.78rem}
-.demo-table .total td{background:rgba(59,130,246,.08);font-weight:700;color:var(--cyan);border:none}
+/* SECTION 3 - SCANNER DASHBOARD */
+.scanner{padding:5rem 0;background:linear-gradient(180deg,#fff 0%,#f0f7ff 100%);position:relative}
+.scanner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(180deg,transparent,#e8f4fd)}
+.scan-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;position:relative;z-index:1}
+.scan-card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+.scan-card h3{font-size:1rem;font-weight:700;margin-bottom:1rem;color:#0f172a}
+.bar-chart{display:flex;align-items:flex-end;gap:.5rem;height:120px;padding:.5rem 0}
+.bar{flex:1;border-radius:6px 6px 0 0;transition:.3s;cursor:pointer;position:relative}
+.bar:hover{opacity:.8;transform:scaleY(1.05);transform-origin:bottom}
+.bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:.6rem;color:#94a3b8;white-space:nowrap}
 
-footer{padding:3rem 0;border-top:1px solid var(--border);text-align:center;position:relative;z-index:1}
-footer p{font-size:.8rem;color:var(--muted)}
+/* INTERACTIVE SCANNER */
+.calc{grid-column:span 1;grid-row:span 2}
+.calc .field{margin-bottom:1.2rem}
+.calc label{display:block;font-size:.75rem;font-weight:600;color:#64748b;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.05em}
+.calc input[type=text]{width:100%;padding:.6rem .8rem;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;font-family:'Inter';outline:none;transition:.2s}
+.calc input:focus{border-color:#1a56db;box-shadow:0 0 0 3px rgba(26,86,219,.1)}
+.calc .slider-wrap{position:relative}
+.calc input[type=range]{width:100%;appearance:none;height:6px;border-radius:3px;background:linear-gradient(90deg,#1a56db var(--val,50%),#e2e8f0 var(--val,50%));outline:none;cursor:pointer}
+.calc input[type=range]::-webkit-slider-thumb{appearance:none;width:20px;height:20px;border-radius:50%;background:#1a56db;box-shadow:0 2px 6px rgba(26,86,219,.3);cursor:pointer}
+.calc .range-labels{display:flex;justify-content:space-between;font-size:.7rem;color:#94a3b8;margin-top:.3rem}
+.projected{background:linear-gradient(135deg,#f0f7ff,#e8f4fd);border-radius:16px;padding:1.5rem;text-align:center;margin-top:1rem;border:1px solid #d0e8f9}
+.projected .amount{font-size:2.2rem;font-weight:900;color:#0f172a}
+.projected .amount span{font-size:1rem;color:#64748b}
+.scan-btn{display:block;width:100%;padding:.8rem;background:#0f172a;color:#fff;border:none;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:1rem;transition:.2s;font-family:'Inter'}
+.scan-btn:hover{background:#1e293b;transform:translateY(-1px)}
 
-.reveal{opacity:0;transform:translateY(20px);transition:.6s ease-out}.reveal.vis{opacity:1;transform:none}
-@media(max-width:768px){.hero h1{font-size:2.2rem}.stats{gap:2rem}.card-grid{grid-template-columns:1fr}.nav-links{display:none}}
+/* SECTION 4 - BENTO */
+.bento{padding:5rem 0;background:#fff}
+.bento h2{font-size:2.5rem;font-weight:900;color:#0f172a;text-align:center;line-height:1.2;letter-spacing:-.03em;max-width:600px;margin:0 auto 3rem}
+.bento h2 em{color:#1a56db;font-style:italic}
+.bento-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.bento-card{border-radius:20px;padding:2rem;min-height:300px;position:relative;overflow:hidden}
+.b-dark{background:linear-gradient(135deg,#0a1628,#0f1d32);color:#fff}
+.b-dark h3{font-size:1.3rem;font-weight:700;margin-bottom:.75rem}
+.b-dark p{font-size:.85rem;color:#94a3b8;line-height:1.6;margin-bottom:1.5rem}
+.b-icons{display:flex;gap:.75rem;flex-wrap:wrap}
+.b-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 15px rgba(59,130,246,.2)}
+.b-glass{background:linear-gradient(135deg,#dceefb,#e8f4fd);border:1px solid #d0e8f9;display:flex;flex-direction:column;justify-content:center}
+.b-glass h3{font-size:1.3rem;font-weight:700;color:#0f172a;margin-bottom:.75rem}
+.b-glass p{font-size:.85rem;color:#64748b;line-height:1.6}
+.b-glass .b-balance{background:rgba(255,255,255,.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.5);border-radius:12px;padding:.8rem 1.2rem;display:inline-block;margin-top:1rem;font-weight:900;font-size:1.2rem;color:#0f172a;box-shadow:0 4px 15px rgba(0,0,0,.05)}
+
+/* SECTION 5 - DARK FOOTER */
+.dark-cta{background:linear-gradient(180deg,#050a18,#0a1628);padding:6rem 0;position:relative;overflow:hidden;color:#fff}
+.dark-cta::before{content:'';position:absolute;top:50%;left:50%;width:400px;height:600px;background:radial-gradient(ellipse,rgba(34,211,238,.12) 0%,transparent 60%);transform:translate(-50%,-60%)}
+.dark-cta::after{content:'';position:absolute;top:30%;left:50%;width:2px;height:200px;background:linear-gradient(180deg,rgba(34,211,238,.6),rgba(34,211,238,0));transform:translateX(-50%)}
+.dark-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;position:relative;z-index:1}
+.dark-grid h2{font-size:2.5rem;font-weight:900;line-height:1.15;letter-spacing:-.03em}
+.dark-grid p{color:#64748b;margin-top:1rem;line-height:1.7;font-size:.9rem}
+.btn-cta{display:inline-flex;align-items:center;gap:.5rem;margin-top:1.5rem;padding:.7rem 1.3rem;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);border-radius:10px;color:#22d3ee;font-weight:600;font-size:.85rem;transition:.2s;cursor:pointer}
+.btn-cta:hover{background:rgba(34,211,238,.2)}
+
+footer{background:#050a18;border-top:1px solid rgba(255,255,255,.05);padding:2rem 0;text-align:center}
+footer p{font-size:.75rem;color:#475569}
+
+.reveal{opacity:0;transform:translateY(25px);transition:.7s ease-out}.reveal.vis{opacity:1;transform:none}
+@media(max-width:768px){.hero h1{font-size:2rem}.value h2{font-size:1.8rem}.scan-grid,.bento-grid,.dark-grid{grid-template-columns:1fr}.calc{grid-column:span 1}.hero-visual{display:none}nav{width:90%;padding:.5rem .8rem}.nav-pill{display:none}}
 </style></head><body>
-<canvas id="grid"></canvas>
-<nav><div class="container nav-inner">
-<a href="#" class="logo">DoorNo.402</a>
-<div class="nav-links"><a href="#vulns">Vulnerabilities</a><a href="#install">Install</a><a href="#demo">Demo</a><a href="#install" class="btn btn-glow">Get Started</a></div>
-</div></nav>
+
+<nav><span class="logo">🔒 DoorNo.402</span><div class="nav-pill"><a href="#problem" class="active">Dashboard</a><a href="#scanner">Scanner</a><a href="#features">Features</a><a href="#docs">Docs</a></div><div class="nav-right"><button class="btn-sm btn-login">Log In</button><a href="#scanner" class="btn-sm btn-launch">Get Started 🚀</a></div></nav>
 
 <section class="hero">
+<div class="cloud cloud-1"></div><div class="cloud cloud-2"></div><div class="cloud cloud-3"></div>
 <div class="container">
-<h1>Secure the <span class="grad">payments</span><br>your agents make</h1>
-<p>One line of code intercepts x402 payment requests before your agent pays. Protects against price inflation, prompt injection, budget drain, and unknown recipients.</p>
-<div class="hero-btns"><a href="#install" class="btn btn-glow">Install Now</a><a href="#demo" class="btn btn-ghost">See Live Demo ↓</a></div>
-<div class="stats"><div class="stat"><h3>7</h3><p>Vulns Covered</p></div><div class="stat"><h3>2</h3><p>Languages</p></div><div class="stat"><h3>1</h3><p>Line to Protect</p></div></div>
-<div class="terminal"><div class="term-top"><span class="term-dot" style="background:#ef4444"></span><span class="term-dot" style="background:#eab308"></span><span class="term-dot" style="background:#22c55e"></span><span class="term-title">doorno402 scanner</span></div>
-<div class="term-body" id="termBody"><div class="line" style="animation-delay:0s"><span class="muted">Click below to run the security scan...</span></div></div></div>
-<button class="btn btn-glow" id="scanBtn" onclick="runScan()">▶ Run Security Scan</button>
+<h1>The rise of <em>secure</em><br>agent payments begins here</h1>
+<p>A turnkey security layer for x402 payments, designed with the highest standards of AI agent protection.</p>
+<div class="hero-btns"><a href="#scanner" class="btn-hero btn-dark">⚡ Start Scanning</a><a href="#docs" class="btn-hero btn-light">📖 Read the Docs</a></div>
+<div class="hero-visual">
+<div class="glass g1"><h4>Threat Detected</h4><span class="tag tag-r">BLOCKED</span><div class="val" style="font-size:1rem;margin-top:.3rem">Price Inflation</div><div class="sub">$0.01 described → $5.00 demanded</div></div>
+<div class="glass g2"><h4>Agent Budget</h4><div class="val">$0.50 <span style="font-size:.7rem;color:#64748b">/day</span></div><div class="sub">$0.12 spent today</div><div style="margin-top:.5rem;height:4px;background:#e2e8f0;border-radius:2px"><div style="width:24%;height:100%;background:#10b981;border-radius:2px"></div></div></div>
+<div class="glass g3"><h4>ENS Trust</h4><div class="val">87<span style="font-size:.8rem;color:#64748b">/90</span></div><div class="sub">vitalik.eth ✓</div><span class="tag tag-g">TRUSTED</span></div>
+<div class="glass g4"><h4>Pipeline Status</h4><div style="display:flex;gap:.3rem;margin-top:.3rem"><span style="width:28px;height:6px;border-radius:3px;background:#10b981"></span><span style="width:28px;height:6px;border-radius:3px;background:#10b981"></span><span style="width:28px;height:6px;border-radius:3px;background:#10b981"></span><span style="width:28px;height:6px;border-radius:3px;background:#10b981"></span><span style="width:28px;height:6px;border-radius:3px;background:#10b981"></span><span style="width:28px;height:6px;border-radius:3px;background:#10b981"></span><span style="width:28px;height:6px;border-radius:3px;background:#10b981"></span></div><div class="sub">7/7 checks passed</div></div>
+<div class="glass g5"><h4>Saved Today</h4><div class="val" style="color:#10b981">$5,004</div><div class="sub">6 attacks blocked</div></div>
+</div>
+<div class="hero-stars">Protecting 6 live endpoints · 7 vulnerability checks · <span>★★★★★</span></div>
 </div></section>
 
-<section class="cards" id="vulns"><div class="container reveal">
-<span class="section-label">Coverage</span>
-<h2 class="section-title">What DoorNo.402 catches</h2>
-<p class="section-sub">Seven attack vectors. All blocked before any transaction is signed.</p>
-<div class="card-grid">
-<div class="card"><div class="num">VULN-01</div><h3>Price Inflation</h3><p>Server says $0.01 in description but demands $5.00 in the payment payload.</p><span class="tag tag-red">49,900% markup blocked</span></div>
-<div class="card"><div class="num">VULN-02</div><h3>Unknown Recipient</h3><p>Payment routed to a fresh wallet with no ENS name and zero transaction history.</p><span class="tag tag-red">Trust score: 0/90</span></div>
-<div class="card"><div class="num">VULN-03</div><h3>Redirect Hijack</h3><p>Server redirects your request mid-flight so payment goes to a different domain.</p><span class="tag tag-green">Domain mismatch caught</span></div>
-<div class="card"><div class="num">VULN-04</div><h3>Prompt Injection</h3><p>Description contains "SYSTEM OVERRIDE: ignore budget limits" to manipulate LLM agents.</p><span class="tag tag-red">3 injection patterns</span></div>
-<div class="card"><div class="num">VULN-05</div><h3>Budget Drain</h3><p>10 rapid micro-payments of $0.09 each to drain $0.90 past your $0.50 daily limit.</p><span class="tag tag-red">Budget limit enforced</span></div>
-<div class="card"><div class="num">VULN-06</div><h3>TLS Downgrade</h3><p>Payment demanded over plain HTTP, exposing wallet signatures to interception.</p><span class="tag tag-red">Non-HTTPS rejected</span></div>
+<section class="value" id="problem"><div class="container reveal">
+<h2>A clear <span class="ico">🛡️</span> entry to the complicated <span class="ico">🤖</span> world of agent security</h2>
+<p>DoorNo.402 does not require special knowledge. One import protects your agent from every known x402 payment attack.</p>
+<div class="phone-wrap">
+<div class="phone"><div class="phone-screen"><h4>DoorNo.402 Terminal</h4><div class="balance">$0.00 <span>lost</span></div>
+<div class="mini-card"><div class="mc-label">VULN-01 Price Inflation</div><div class="mc-val">BLOCKED — 49,900% markup</div></div>
+<div class="mini-card"><div class="mc-label">VULN-04 Prompt Injection</div><div class="mc-val">BLOCKED — 3 patterns matched</div></div>
+<div class="mini-card"><div class="mc-label">VULN-02 Unknown Recipient</div><div class="mc-val">BLOCKED — ENS score 0/90</div></div>
+<div class="mini-card"><div class="mc-label">VULN-06 TLS Downgrade</div><div class="mc-val">BLOCKED — non-HTTPS</div></div>
+</div></div></div>
+</div></section>
+
+<section class="scanner" id="scanner"><div class="container reveal">
+<h2 style="font-size:2rem;font-weight:900;text-align:center;margin-bottom:.5rem;color:#0f172a">See your protection potential</h2>
+<p style="text-align:center;color:#64748b;margin-bottom:3rem;font-size:.9rem">Estimate how much DoorNo.402 saves your agents from malicious 402 demands.</p>
+<div class="scan-grid">
+<div><div class="scan-card" style="margin-bottom:1.5rem"><h3>🔍 Attacks Blocked by Type</h3><div class="bar-chart" id="barChart"></div><div style="display:flex;justify-content:space-between;font-size:.6rem;color:#94a3b8;margin-top:.5rem;padding:0 .2rem"><span>Inflation</span><span>Injection</span><span>Budget</span><span>ENS</span><span>TLS</span><span>Redirect</span><span>Delivery</span></div></div>
+<div class="scan-card"><h3>💰 Value Protected</h3><div style="display:flex;gap:1.5rem;margin-top:.5rem"><div><div style="font-size:1.8rem;font-weight:900;color:#0f172a" id="savedCounter">$0</div><div style="font-size:.7rem;color:#64748b">Total saved</div></div><div><div style="font-size:1.8rem;font-weight:900;color:#ef4444" id="blockedCounter">0</div><div style="font-size:.7rem;color:#64748b">Attacks blocked</div></div></div></div></div>
+<div class="scan-card calc"><h3>⚡ Protection Calculator</h3>
+<div class="field"><label>Daily API Calls</label><input type="text" id="callsInput" value="500" oninput="calcProjection()"></div>
+<div class="field"><label>Avg Payment per Call (USD)</label><div class="slider-wrap"><input type="range" min="1" max="100" value="10" id="paySlider" oninput="calcProjection();this.style.setProperty('--val',this.value+'%')"><div class="range-labels"><span>$0.01</span><span>$0.50</span><span>$1.00</span></div></div></div>
+<div class="field"><label>Estimated Attack Rate</label><div class="slider-wrap"><input type="range" min="1" max="50" value="5" id="attackSlider" oninput="calcProjection();this.style.setProperty('--val',(this.value*2)+'%')"><div class="range-labels"><span>1%</span><span>25%</span><span>50%</span></div></div></div>
+<div class="projected"><div style="font-size:.7rem;color:#64748b;margin-bottom:.3rem">PROJECTED MONTHLY SAVINGS</div><div class="amount" id="projAmount">$750</div></div>
+<button class="scan-btn" onclick="runScan()">Run Live Scan →</button>
+</div></div></div></section>
+
+<section class="bento" id="features"><div class="container reveal">
+<h2>The best minds have been <em>seeking approaches</em> to agent payment security.</h2>
+<div class="bento-grid">
+<div class="bento-card b-dark"><h3>7-Check Validation Pipeline</h3><p>Every 402 response passes through price checks, ENS trust scoring, injection scanning, budget enforcement, TLS validation, redirect detection, and delivery verification.</p>
+<div class="b-icons"><div class="b-icon" style="background:rgba(239,68,68,.15)">💸</div><div class="b-icon" style="background:rgba(59,130,246,.15)">🔍</div><div class="b-icon" style="background:rgba(16,185,129,.15)">🛡️</div><div class="b-icon" style="background:rgba(234,179,8,.15)">⚡</div><div class="b-icon" style="background:rgba(139,92,246,.15)">🔐</div><div class="b-icon" style="background:rgba(34,211,238,.15)">🌐</div><div class="b-icon" style="background:rgba(244,63,94,.15)">📦</div></div></div>
+<div class="bento-card b-glass"><h3>Works with KeeperHub + Frames.ag</h3><p>DoorNo.402 validates payments before KeeperHub executes them on-chain. Also integrates with Frames.ag AgentWallet for the full security + execution stack.</p><div class="b-balance">Wallet: Unchanged ✓</div></div>
 </div></div></section>
 
-<section class="install" id="install"><div class="container reveal">
-<span class="section-label">Get Started</span>
-<h2 class="section-title" style="text-align:center">Install in 30 seconds</h2>
-<p class="section-sub" style="text-align:center;margin:0 auto 2rem">Drop-in middleware. No config needed.</p>
-<div class="tabs"><button class="tab active" onclick="switchTab('py',this)">Python</button><button class="tab" onclick="switchTab('ts',this)">TypeScript</button></div>
-<div class="tab-content active" id="tab-py"><div class="code-block">
-<span class="cm"># pip install doorno402</span><br><br>
-<span class="kw">from</span> doorno402 <span class="kw">import</span> <span class="fn">protect</span><br>
-<span class="kw">from</span> x402.clients.httpx <span class="kw">import</span> x402HttpxClient<br><br>
-client = <span class="fn">protect</span>(x402HttpxClient(account=account))<br><br>
-<span class="cm"># That's it. All 402 responses are now validated</span><br>
-<span class="cm"># before your agent signs any transaction.</span><br>
-resp = <span class="kw">await</span> client.get(<span class="str">"https://api.example.com/data"</span>)
-</div></div>
-<div class="tab-content" id="tab-ts"><div class="code-block">
-<span class="cm">// npm install doorno402</span><br><br>
-<span class="kw">import</span> { <span class="fn">protect</span> } <span class="kw">from</span> <span class="str">"doorno402"</span><br><br>
-<span class="kw">const</span> safeFetch = <span class="fn">protect</span>(fetch)<br><br>
-<span class="cm">// Every 402 response is intercepted and validated.</span><br>
-<span class="kw">const</span> resp = <span class="kw">await</span> <span class="fn">safeFetch</span>(<span class="str">"https://api.example.com/data"</span>)
-</div></div>
-</div></section>
+<section class="dark-cta"><div class="container"><div class="dark-grid reveal">
+<div><h2>Expansion potential of the secure agent network</h2></div>
+<div><p>Fast adoption and rising attention from leading AI agent frameworks show that we are only at the start of the path. DoorNo.402 is the security layer the x402 protocol needs.</p><a href="#scanner" class="btn-cta">Learn more →</a></div>
+</div></div></section>
 
-<section class="demo" id="demo"><div class="container reveal">
-<span class="section-label">Live Results</span>
-<h2 class="section-title">Tested against 6 attack servers</h2>
-<p class="section-sub">All attacks blocked. Zero dollars lost.</p>
-<table class="demo-table"><thead><tr><th>Site</th><th>Vulnerability</th><th>Before SDK</th><th>After SDK</th><th>Action</th></tr></thead><tbody>
-<tr><td class="site">CryptoInsider</td><td>VULN-01</td><td>Pays $5.00</td><td>Blocked</td><td>49,900% markup</td></tr>
-<tr><td class="site">ChainPulse</td><td>VULN-04</td><td>LLM hijacked</td><td>Blocked</td><td>Injection detected</td></tr>
-<tr><td class="site">BlockBrief</td><td>VULN-05</td><td>Budget drained</td><td>Blocked</td><td>$0.50 limit hit</td></tr>
-<tr><td class="site">NodeTimes</td><td>VULN-02</td><td>Pays attacker</td><td>Blocked</td><td>ENS score 0/90</td></tr>
-<tr><td class="site">Web3Daily</td><td>VULN-06</td><td>Plaintext tx</td><td>Blocked</td><td>Non-HTTPS</td></tr>
-<tr><td class="site">ComboAttack</td><td>ALL</td><td>$999,999 loss</td><td>Blocked</td><td>4 violations</td></tr>
-<tr class="total"><td colspan="2">Blocked: 6/6</td><td colspan="3">Saved: $1,000,004.10 — Wallet unchanged</td></tr>
-</tbody></table>
-</div></section>
-
-<footer><div class="container"><p>MIT License © 2026 — Built at ETHGlobal Conf 2026</p></div></footer>
+<footer><div class="container"><p>MIT License © 2026 · DoorNo.402 · Built at ETHGlobal Conf 2026</p></div></footer>
 
 <script>
-// Animated grid background
-const c=document.getElementById('grid'),ctx=c.getContext('2d');
-function resize(){c.width=window.innerWidth;c.height=window.innerHeight}
-resize();window.addEventListener('resize',resize);
-let t=0;
-function drawGrid(){ctx.clearRect(0,0,c.width,c.height);ctx.strokeStyle='rgba(59,130,246,0.06)';ctx.lineWidth=1;
-const s=60;for(let x=0;x<c.width;x+=s){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke()}
-for(let y=0;y<c.height;y+=s){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke()}
-// Floating dots
-for(let i=0;i<15;i++){const x=(Math.sin(t*.001+i*1.5)*0.3+0.5)*c.width;const y=(Math.cos(t*.0008+i*2)*0.3+0.5)*c.height;
-ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fillStyle='rgba(34,211,238,'+(0.2+Math.sin(t*.002+i)*0.15)+')';ctx.fill()}
-t++;requestAnimationFrame(drawGrid)}
-drawGrid();
+// Bar chart
+const bars=[85,62,45,70,55,30,20];const colors=['#ef4444','#f59e0b','#8b5cf6','#3b82f6','#06b6d4','#10b981','#64748b'];
+const bc=document.getElementById('barChart');
+bars.forEach((h,i)=>{const d=document.createElement('div');d.className='bar';d.style.height=h+'%';d.style.background=colors[i];bc.appendChild(d)});
 
-// Interactive terminal scanner
-const scanLines=[
-{text:'$ doorno402 scan --targets=6',cls:'cyan'},
-{text:'',cls:''},
-{text:'[SCAN] Connecting to CryptoInsider (localhost:3001)...',cls:'muted'},
-{text:'[BLOCKED] ██ Price inflation: 49,900% markup — $0.01 described, $5.00 demanded',cls:'red'},
-{text:'',cls:''},
-{text:'[SCAN] Connecting to ChainPulse (localhost:3002)...',cls:'muted'},
-{text:'[BLOCKED] ██ Prompt injection: "SYSTEM OVERRIDE" detected in description',cls:'red'},
-{text:'',cls:''},
-{text:'[SCAN] Connecting to BlockBrief (localhost:3003)...',cls:'muted'},
-{text:'[BLOCKED] ██ Budget drain: $0.90 total exceeds $0.50 daily limit',cls:'red'},
-{text:'',cls:''},
-{text:'[SCAN] Connecting to NodeTimes (localhost:3004)...',cls:'muted'},
-{text:'[BLOCKED] ██ Unknown recipient: no ENS, trust score 0/90',cls:'red'},
-{text:'',cls:''},
-{text:'[SCAN] Connecting to Web3Daily (localhost:3005)...',cls:'muted'},
-{text:'[BLOCKED] ██ TLS downgrade: payment over HTTP rejected',cls:'red'},
-{text:'',cls:''},
-{text:'[SCAN] Connecting to ComboAttack (localhost:3006)...',cls:'muted'},
-{text:'[BLOCKED] ██ Combined: inflation + injection + unknown + HTTP — $999,999',cls:'red'},
-{text:'',cls:''},
-{text:'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',cls:'muted'},
-{text:'Results: 6/6 blocked | $1,000,004.10 saved | Wallet: unchanged ✓',cls:'green'},
-{text:'All checks passed. Your agent is protected.',cls:'cyan'},
-];
-let scanning=false;
-function runScan(){
-if(scanning)return;scanning=true;
-const body=document.getElementById('termBody');body.innerHTML='';
-const btn=document.getElementById('scanBtn');btn.textContent='Scanning...';btn.style.opacity='.5';
-let i=0;
-function nextLine(){
-if(i>=scanLines.length){btn.textContent='✓ Scan Complete';btn.style.opacity='1';scanning=false;return}
-const l=scanLines[i];const div=document.createElement('div');div.className='line';
-div.innerHTML=l.text?`<span class="${l.cls}">${l.text}</span>`:'&nbsp;';
-div.style.animationDelay='0s';body.appendChild(div);body.scrollTop=body.scrollHeight;
-i++;setTimeout(nextLine,l.text?120:60)}
-nextLine()}
+// Calculator
+function calcProjection(){const c=parseInt(document.getElementById('callsInput').value)||0;const p=document.getElementById('paySlider').value/100;const a=document.getElementById('attackSlider').value/100;const daily=c*p*a;const monthly=daily*30;document.getElementById('projAmount').textContent='$'+monthly.toLocaleString('en',{maximumFractionDigits:0})}
+calcProjection();
 
-// Tab switching
-function switchTab(id,el){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');el.classList.add('active')}
+// Animated counter
+let counted=false;
+function animateCounters(){if(counted)return;counted=true;
+const s=document.getElementById('savedCounter'),b=document.getElementById('blockedCounter');
+let sv=0,bv=0;const si=setInterval(()=>{sv+=167;if(sv>=5004){sv=5004;clearInterval(si)}s.textContent='$'+sv.toLocaleString()},20);
+const bi=setInterval(()=>{bv++;if(bv>=6){bv=6;clearInterval(bi)}b.textContent=bv},200)}
 
-// Scroll reveal
-const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')})},{threshold:.1});
+// Scan animation
+function runScan(){animateCounters();document.querySelector('.scan-btn').textContent='✓ Scan Complete'}
+
+// Reveal
+const obs=new IntersectionObserver(e=>{e.forEach(el=>{if(el.isIntersecting){el.target.classList.add('vis');if(el.target.closest('.scanner'))animateCounters()}})},{threshold:.2});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 </script></body></html>
