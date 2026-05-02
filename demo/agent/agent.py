@@ -13,6 +13,10 @@ import asyncio
 import httpx
 from dotenv import load_dotenv
 
+if sys.platform == "win32":
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+
 # Add SDK to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "sdk", "python"))
 
@@ -21,12 +25,16 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 async def execute_keeperhub_payment(recipient: str, amount_usd: float, token_address: str):
     """Executes a transaction via KeeperHub Direct Execution API."""
     api_key = os.environ.get("KEEPERHUB_API_KEY", "")
-    
+    if not api_key:
+        return {"success": False, "error": "KEEPERHUB_API_KEY not set in .env"}
+
+    headers = {"Authorization": f"Bearer {api_key}"}
+
     # 1. Initiate Transfer
-    async with httpx.AsyncClient() as kh_client:
+    async with httpx.AsyncClient(timeout=30) as kh_client:
         resp = await kh_client.post(
             "https://app.keeperhub.com/api/execute/transfer",
-            headers={"Authorization": f"Bearer {api_key}"},
+            headers=headers,
             json={
                 "network": "base-sepolia",
                 "recipientAddress": recipient,
@@ -36,29 +44,30 @@ async def execute_keeperhub_payment(recipient: str, amount_usd: float, token_add
         )
         data = resp.json()
         execution_id = data.get("executionId")
-        
+
         if not execution_id:
             return {"success": False, "error": data.get("error", "Failed to start execution")}
 
-        # 2. Poll for Completion
-        while True:
+        # 2. Poll for Completion (up to 90 seconds)
+        for _ in range(30):
+            await asyncio.sleep(3)
             status_resp = await kh_client.get(
                 f"https://app.keeperhub.com/api/execute/{execution_id}/status",
-                headers={"Authorization": f"Bearer {api_key}"}
+                headers=headers
             )
             status_data = status_resp.json()
             status = status_data.get("status")
-            
-            if status == "completed":
+
+            if status in ("completed", "failed"):
                 return {
-                    "success": True, 
+                    "success": status == "completed",
                     "tx_hash": status_data.get("transactionHash"),
-                    "tx_link": status_data.get("transactionLink")
+                    "tx_link": status_data.get("transactionLink"),
+                    "error": status_data.get("error")
                 }
-            elif status == "failed":
-                return {"success": False, "error": status_data.get("error", "Unknown KeeperHub Error")}
-            
-            await asyncio.sleep(2)
+
+        return {"success": False, "error": "Timed out waiting for KeeperHub"}
+
 
 
 async def run_agent_task(target_url: str):
@@ -70,10 +79,9 @@ async def run_agent_task(target_url: str):
         
         # =====================================================================
         # DOORNO.402 PROTECTION LAYER
-        # Uncomment the 2 lines below to secure the agent against malicious 402s
         # =====================================================================
-        # from doorno402 import protect
-        # client = protect(client, daily_budget=5.00)
+        #from doorno402 import protect
+        #client = protect(client, daily_budget=5.00)
         
         resp = await client.get(target_url)
     except Exception as e:
@@ -88,9 +96,12 @@ async def run_agent_task(target_url: str):
         payload = resp.json()
         
         # Extract fields from standard x402 payload
-        amount_usd = float(payload.get("amount", 0)) / 1000000.0 if "amount" in payload else 5.0
-        recipient = payload.get("recipient", "")
-        token_address = payload.get("asset") or payload.get("token") or "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
+        accepts = payload.get("accepts", [{}])
+        req = accepts[0] if accepts else {}
+        raw_amount = int(req.get("maxAmountRequired", 0))
+        amount_usd = raw_amount / 1000000.0 if raw_amount else 5.0
+        recipient = req.get("payTo", "")
+        token_address = req.get("asset", "") or req.get("token", "") or "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
         
         print(f"Agent: Protocol demands ${amount_usd:.2f} USDC.")
         print("Agent: Forwarding payment request to KeeperHub...")
