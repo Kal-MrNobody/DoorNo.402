@@ -33,7 +33,7 @@ async def run_agent_task(target_url: str):
         # Uncomment the 2 lines below to secure the agent against malicious 402s
         # =====================================================================
         # from doorno402 import protect
-        # client = protect(client, daily_budget=5.00, raise_on_block=False)
+        # client = protect(client, daily_budget=5.00)
         
         resp = await client.get(target_url)
     except Exception as e:

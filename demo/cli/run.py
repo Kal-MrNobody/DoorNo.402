@@ -254,7 +254,6 @@ async def run_protected(server_url, slug):
     show_402_details(details)
 
     from doorno402 import protect
-    from doorno402.guard import PaymentBlockedError
 
     console.print("\n  [yellow]Securing agent with DoorNo.402 (2 lines of code)...[/]")
     time.sleep(0.3)
@@ -265,17 +264,17 @@ async def run_protected(server_url, slug):
     # DOORNO.402 PROTECTION LAYER
     # We wrap the client. It will automatically intercept and validate any 402s.
     # =========================================================================
-    client = protect(client, daily_budget=5.00, raise_on_block=True)
+    client = protect(client, daily_budget=5.00)
 
     console.print("  [blue]Executing request via protected client...[/]")
-    try:
-        resp = await client.get(url)
-    except PaymentBlockedError as e:
-        show_blocked_panel(str(e), details["amount_usd"])
+    resp = await client.get(url)
+    
+    if resp.status_code == 403:
+        show_blocked_panel("DoorNo.402 blocked the payment (Security Policy)", details["amount_usd"])
         await client.aclose()
         return
-    finally:
-        await client.aclose()
+        
+    await client.aclose()
 
     # All checks passed internally by protect()
     console.print("\n  [green bold]DoorNo.402 approved -- forwarding to KeeperHub...[/]")
@@ -332,21 +331,20 @@ async def run_all_servers():
 
         # Run validation pipeline using 2 lines
         from doorno402 import protect
-        from doorno402.guard import PaymentBlockedError
         import httpx
 
         client = httpx.AsyncClient(timeout=5)
-        client = protect(client, daily_budget=5.00, raise_on_block=True)
+        client = protect(client, daily_budget=5.00)
         
         blocked = False
         reason = ""
-        try:
-            resp = await client.get(article_url)
-        except PaymentBlockedError as e:
+        
+        resp = await client.get(article_url)
+        if resp.status_code == 403:
             blocked = True
-            reason = str(e)
-        finally:
-            await client.aclose()
+            reason = "Security Policy Violation"
+            
+        await client.aclose()
 
         if blocked:
             console.print("[red bold]BLOCKED[/]")
