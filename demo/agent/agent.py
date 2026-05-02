@@ -21,24 +21,26 @@ from keeperhub_executor import extract_payment_details, execute_payment
 
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
-# =============================================================================
-# DOORNO.402 SECURITY SDK
-# Uncomment these imports to enable the protection layer
-# =============================================================================
-# from doorno402.validators.price import validate_price
-# from doorno402.validators.injection import validate_injection
-# from doorno402.validators.tls import validate_tls
-
 async def run_agent_task(target_url: str):
     print("\n[ Agent Started ]")
     print(f"Agent: Requesting resource from {target_url}")
     
     try:
-        async with httpx.AsyncClient(timeout=5) as client:
-            resp = await client.get(target_url)
+        client = httpx.AsyncClient(timeout=5)
+        
+        # =====================================================================
+        # DOORNO.402 PROTECTION LAYER
+        # Uncomment the 2 lines below to secure the agent against malicious 402s
+        # =====================================================================
+        # from doorno402 import protect
+        # client = protect(client, daily_budget=5.00, raise_on_block=False)
+        
+        resp = await client.get(target_url)
     except Exception as e:
         print(f"Agent: Failed to connect - {e}")
         return
+    finally:
+        await client.aclose()
 
     # 1. Agent intercepts 402 Payment Required
     if resp.status_code == 402:
@@ -47,14 +49,6 @@ async def run_agent_task(target_url: str):
         details = extract_payment_details(payload)
         
         print(f"Agent: Protocol demands ${details['amount_usd']:.2f} USDC.")
-
-        # =====================================================================
-        # DOORNO.402 PROTECTION LAYER
-        # Uncomment the 3 lines below to secure the agent against malicious 402s
-        # =====================================================================
-        # if not validate_tls(target_url)["valid"]: return print("Agent: 🛑 BLOCKED (Insecure TLS)")
-        # if validate_injection(payload).get("injection_detected"): return print("Agent: 🛑 BLOCKED (Prompt Injection)")
-        # if not validate_price(payload)["valid"]: return print("Agent: 🛑 BLOCKED (Price Inflation)")
         
         print("Agent: Forwarding payment request to KeeperHub...")
         result = await execute_payment(
@@ -68,6 +62,8 @@ async def run_agent_task(target_url: str):
         else:
             print(f"Agent: ❌ KeeperHub Error: {result.error}")
             
+    elif resp.status_code == 403:
+        print("Agent: 🛑 DoorNo.402 BLOCKED the payment request (Security Policy Violation).")
     elif resp.status_code == 200:
         print("Agent: Successfully fetched data without payment.")
         print(f"Agent: Preview -> {resp.text[:100]}...")

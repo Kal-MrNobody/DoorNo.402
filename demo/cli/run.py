@@ -208,9 +208,8 @@ async def run_unprotected(server_url, slug):
     # 
     # To secure this agent, you would uncomment the DoorNo.402 validation:
     # 
-    # if not validate_tls(url)["valid"]: return
-    # if validate_injection(payload).get("injection_detected"): return
-    # if not validate_price(payload)["valid"]: return
+    # from doorno402 import protect
+    # client = protect(client, daily_budget=5.00)
     # =========================================================================
 
     console.print("[red bold]No validation -- forwarding directly to KeeperHub...[/]")
