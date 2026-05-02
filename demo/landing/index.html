@@ -182,6 +182,103 @@ resp = await client.get("https://malicious.com/api/news")</code></pre>
     </div>
   </section>
 
+  <section class="solution" id="how">
+    <div class="container">
+      <h2>One import. Full protection.</h2>
+      
+      <div class="diagram-simple" style="margin-bottom: 3rem;">
+        Agent ➔ 402 request ➔ <span style="color: var(--green);">DoorNo.402 validates</span> ➔ KeeperHub executes
+      </div>
+      
+      <div class="grid-2">
+        <div class="code-window">
+          <div class="code-header">Protected Agent</div>
+          <pre class="code-body"><code class="language-python">from x402.clients.httpx import x402HttpxClient
+from doorno402 import protect
+
+# Wrap the client in DoorNo.402 protection
+client = protect(x402HttpxClient(account=account))
+
+# Intercepts malicious responses automatically
+resp = await client.get("https://malicious.com/api/news")</code></pre>
+        </div>
+        <div class="code-window">
+          <div class="code-header">The Result</div>
+          <pre class="code-body"><code class="language-python"># Output:
+PaymentBlockedError: payment blocked
+
+# Details:
+{
+  "valid": False,
+  "reason": "price inflation detected: 49900.00% markup"
+}
+
+# Your wallet balance remains untouched.</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="vulns" id="vulns">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 3rem;">What DoorNo.402 catches</h2>
+      <table style="width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+        <thead>
+          <tr style="background: #0f172a; color: white; text-align: left;">
+            <th style="padding: 1rem;">#</th>
+            <th style="padding: 1rem;">Vulnerability</th>
+            <th style="padding: 1rem;">Attack</th>
+            <th style="padding: 1rem;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 1rem;">01</td>
+            <td style="padding: 1rem; font-weight: bold;">Price Inflation</td>
+            <td style="padding: 1rem; color: #475569;">Server claims $0.01, charges $5</td>
+            <td style="padding: 1rem;"><span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">Covered</span></td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 1rem;">02</td>
+            <td style="padding: 1rem; font-weight: bold;">Unknown Recipient</td>
+            <td style="padding: 1rem; color: #475569;">No ENS, zero trust score</td>
+            <td style="padding: 1rem;"><span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">Covered</span></td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 1rem;">03</td>
+            <td style="padding: 1rem; font-weight: bold;">Redirect Hijack</td>
+            <td style="padding: 1rem; color: #475569;">Payment redirected to attacker</td>
+            <td style="padding: 1rem;"><span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">Covered</span></td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 1rem;">04</td>
+            <td style="padding: 1rem; font-weight: bold;">Prompt Injection</td>
+            <td style="padding: 1rem; color: #475569;">LLM override in description</td>
+            <td style="padding: 1rem;"><span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">Covered</span></td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 1rem;">05</td>
+            <td style="padding: 1rem; font-weight: bold;">Budget Drain</td>
+            <td style="padding: 1rem; color: #475569;">Rapid micro-payments</td>
+            <td style="padding: 1rem;"><span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">Covered</span></td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 1rem;">06</td>
+            <td style="padding: 1rem; font-weight: bold;">TLS Downgrade</td>
+            <td style="padding: 1rem; color: #475569;">Payment over HTTP</td>
+            <td style="padding: 1rem;"><span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">Covered</span></td>
+          </tr>
+          <tr>
+            <td style="padding: 1rem;">07</td>
+            <td style="padding: 1rem; font-weight: bold;">Fake Delivery</td>
+            <td style="padding: 1rem; color: #475569;">Empty response after payment</td>
+            <td style="padding: 1rem;"><span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem;">Covered</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <script>
     hljs.highlightAll();
   </script>
