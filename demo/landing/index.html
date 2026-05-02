@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DoorNo.402 - Agent Security</title>
+    <title>DoorNo.402 | The Firewall for AI Agents</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --yellow: #EFC356;
-            --dark-yellow: rgba(183, 146, 56, 0.9);
-            --blue: #7EB5E1;
-            --dark: #030F0E;
-            --light-bg: #F9F9F9;
-            --card-bg: #EFEEEE;
-            --text-dark: #333333;
-            --pink: #F8B3B8;
-            --green: #6FCF97;
-            --cyan: #62DBE2;
+            --bg-base: #020617;
+            --bg-surface: #0f172a;
+            --bg-surface-light: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --glass: rgba(15, 23, 42, 0.6);
         }
 
         * {
@@ -28,554 +31,550 @@
         }
 
         body {
-            font-family: 'Lato', sans-serif;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
             overflow-x: hidden;
-            background: var(--light-bg);
-            color: var(--text-dark);
+            line-height: 1.6;
         }
 
-        /* Nav */
+        /* Background Effects */
+        .glow-bg {
+            position: fixed;
+            top: -50%;
+            left: -10%;
+            width: 120vw;
+            height: 120vh;
+            background: radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 30%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: -2;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+            -webkit-mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Typography */
+        h1, h2, h3 { font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-gradient-accent {
+            background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Navigation */
         nav {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            padding: 40px 80px;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 20px 0;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+        .nav-inner {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 100;
         }
-
         .logo {
-            font-family: 'Lato';
+            font-size: 20px;
             font-weight: 900;
-            font-size: 32px;
-            color: #FFFFFF;
+            color: #fff;
             text-decoration: none;
-            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.05em;
         }
-
+        .logo-icon {
+            width: 24px; height: 24px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border-radius: 6px;
+            display: grid; place-items: center;
+            font-size: 14px;
+        }
+        .nav-links { display: flex; gap: 32px; align-items: center; }
         .nav-links a {
-            color: #FFFFFF;
+            color: var(--text-muted);
             text-decoration: none;
-            font-size: 18px;
-            font-weight: 700;
-            margin-left: 40px;
-            font-family: 'Roboto Mono', monospace;
-            text-transform: uppercase;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #fff; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border-color: var(--border);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--border-hover);
         }
 
         /* Hero Section */
         .hero {
-            position: relative;
-            width: 100%;
-            min-height: 1000px;
-            background: var(--yellow);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            padding: 0 80px;
+            padding: 160px 0 100px;
+            text-align: center;
         }
-
-        .hero-blob {
-            position: absolute;
-            width: 438px;
-            height: 438px;
-            left: 50%;
-            top: 50%;
-            background: var(--dark-yellow);
-            filter: blur(80px);
-            border-radius: 50%;
-            z-index: 1;
-        }
-        
-        .hero-shape-1 {
-            position: absolute;
-            width: 350px;
-            height: 260px;
-            right: 10%;
-            top: 10%;
-            background: rgba(255, 255, 255, 0.15);
-            transform: rotate(-25deg);
-            border-radius: 40px;
-            z-index: 1;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 10;
-            width: 650px;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-            margin-top: -100px;
-        }
-
-        .hero h1 {
-            font-weight: 900;
-            font-size: 80px;
-            line-height: 1.1;
-            letter-spacing: 0.01em;
-            color: #FFFFFF;
-        }
-
-        .hero p {
-            font-weight: 400;
-            font-size: 24px;
-            line-height: 1.4;
-            color: #FFFFFF;
-        }
-
-        .btn-primary {
+        .hero-badge {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 24px 64px;
-            background: var(--blue);
-            border-radius: 40px;
-            color: #FFFFFF;
-            font-weight: 700;
-            font-size: 24px;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            width: fit-content;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-4px);
-            background: #6aa1cc;
-        }
-
-        .hero-visual {
-            position: absolute;
-            right: 5%;
-            top: 25%;
-            z-index: 5;
-            width: 600px;
-            height: 700px;
-        }
-
-        .screen-mock {
-            position: absolute;
-            width: 450px;
-            height: 600px;
-            background: #030F0E;
-            border-radius: 20px;
-            transform: rotate(8deg);
-            box-shadow: -20px 30px 60px rgba(0,0,0,0.2);
-            padding: 30px;
-            color: white;
-            font-family: 'Roboto Mono', monospace;
-            overflow: hidden;
-            border: 8px solid #333;
-        }
-
-        .screen-mock::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 100%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 100%);
-            pointer-events: none;
-        }
-
-        .mock-line {
-            color: #6FCF97;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-        .mock-line.red { color: #FF8B94; }
-        .mock-line.muted { color: #888; }
-
-        /* Features Cards Section */
-        .features-section {
-            padding: 120px 80px;
-            background: var(--light-bg);
-            position: relative;
-            z-index: 10;
-        }
-
-        .feature-container {
-            background: var(--card-bg);
-            border: 2px solid #FFFFFF;
-            border-radius: 32px;
-            padding: 60px;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.03);
-        }
-
-        .feature-row {
-            display: flex;
-            align-items: center;
-            gap: 40px;
-        }
-
-        .feature-icon {
-            width: 96px;
-            height: 96px;
-            border-radius: 24px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            color: white;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-        }
-
-        .icon-pink { background: var(--pink); }
-        .icon-green { background: var(--green); }
-        .icon-cyan { background: var(--cyan); }
-
-        .feature-text {
-            display: flex;
-            flex-direction: column;
             gap: 8px;
+            padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 32px;
         }
-
-        .feature-text h3 {
+        .hero h1 {
+            font-size: clamp(48px, 6vw, 72px);
             font-weight: 900;
-            font-size: 32px;
-            color: var(--text-dark);
+            max-width: 900px;
+            margin: 0 auto 24px;
         }
-
-        .feature-text p {
-            font-weight: 400;
-            font-size: 18px;
-            color: var(--text-dark);
-            line-height: 1.5;
+        .hero p {
+            font-size: 20px;
+            color: var(--text-muted);
             max-width: 600px;
+            margin: 0 auto 40px;
         }
-
-        /* Demo / Code Section */
-        .demo-section {
-            padding: 120px 80px;
-            background: #FFFFFF;
-        }
-
-        .demo-header {
-            text-align: center;
-            margin-bottom: 80px;
-        }
-
-        .demo-header h2 {
-            font-size: 56px;
-            font-weight: 900;
-            color: var(--text-dark);
-            margin-bottom: 24px;
-        }
-
-        .demo-content {
+        .hero-cta {
             display: flex;
-            gap: 60px;
-            max-width: 1400px;
-            margin: 0 auto;
+            gap: 16px;
+            justify-content: center;
         }
 
-        .code-window {
-            flex: 1;
-            background: var(--dark);
-            border-radius: 24px;
-            padding: 40px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+        /* Terminal Component */
+        .terminal-wrapper {
+            max-width: 800px;
+            margin: 80px auto 0;
+            perspective: 1000px;
         }
-
-        .code-window pre {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 16px;
-            line-height: 1.6;
-            color: #FFF;
-            overflow-x: auto;
+        .terminal {
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
+            transform: rotateX(5deg);
+            transition: transform 0.5s ease;
         }
-
-        .code-keyword { color: var(--pink); }
-        .code-string { color: var(--green); }
-        .code-comment { color: #888; }
-        
-        .demo-stats {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            align-content: center;
-        }
-
-        .stat-box {
-            background: var(--light-bg);
-            padding: 40px;
-            border-radius: 24px;
-            text-align: center;
-            border: 2px solid #EAEAEA;
-        }
-
-        .stat-box h4 {
-            font-size: 48px;
-            font-weight: 900;
-            color: var(--text-dark);
-            margin-bottom: 10px;
-        }
-
-        .stat-box p {
-            font-size: 16px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-family: 'Roboto Mono', monospace;
-        }
-
-        /* Dark CTA Section */
-        .dark-section {
-            background: var(--dark);
-            padding: 140px 80px;
-            position: relative;
+        .terminal:hover { transform: rotateX(0deg); }
+        .terminal-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            min-height: 800px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border);
+        }
+        .terminal-dots { display: flex; gap: 6px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.r { background: #ff5f56; } .dot.y { background: #ffbd2e; } .dot.g { background: #27c93f; }
+        .terminal-title { margin-left: auto; margin-right: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+        .terminal-body {
+            padding: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            text-align: left;
+            line-height: 1.7;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .term-line { opacity: 0; animation: fadeIn 0.1s forwards; margin-bottom: 8px; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        .c-cmd { color: var(--accent-cyan); }
+        .c-sys { color: var(--text-muted); }
+        .c-err { color: var(--accent-red); }
+        .c-ok { color: var(--accent-green); }
+
+        /* Bento Features */
+        .features { padding: 120px 0; }
+        .section-header { text-align: center; margin-bottom: 64px; }
+        .section-header h2 { font-size: 40px; margin-bottom: 16px; }
+        .section-header p { font-size: 18px; color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+        
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .bento-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            position: relative;
             overflow: hidden;
         }
-
-        .dark-section::before {
+        .bento-card:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+        }
+        .bento-card::before {
             content: '';
-            position: absolute;
-            width: 800px;
-            height: 800px;
-            background: radial-gradient(circle, rgba(98, 219, 226, 0.05) 0%, transparent 70%);
-            top: -200px;
-            right: -200px;
-            border-radius: 50%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.06), transparent 40%);
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
         }
-
-        .dark-list {
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-            flex: 1;
-            max-width: 500px;
-        }
-
-        .list-item {
-            display: flex;
-            align-items: center;
-            gap: 32px;
-        }
-
-        .list-line {
-            width: 8px;
-            height: 56px;
-            background: #FFFFFF;
-            border-radius: 4px;
-        }
-
-        .list-text {
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 400;
-            font-size: 20px;
-            line-height: 1.4;
-            color: #FFFFFF;
-        }
-
-        .dark-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 40px;
-            text-align: right;
-            max-width: 800px;
-        }
-
-        .dark-content h2 {
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 700;
-            font-size: 64px;
-            line-height: 1.2;
-            color: #FFFFFF;
-        }
-
-        .dark-content p {
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 400;
-            font-size: 22px;
-            line-height: 1.5;
-            color: #AAAAAA;
-        }
-
-        .btn-white {
-            background: #FFFFFF;
-            color: var(--text-dark);
-        }
+        .bento-card:hover::before { opacity: 1; }
         
-        .btn-white:hover {
-            background: #EAEAEA;
+        .bento-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: grid; place-items: center;
+            font-size: 20px;
+            margin-bottom: 24px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
         }
+        .bento-card h3 { font-size: 20px; margin-bottom: 12px; }
+        .bento-card p { font-size: 15px; color: var(--text-muted); }
+        .col-span-2 { grid-column: span 2; }
+        
+        /* Stats inline */
+        .stat-bar { display: flex; align-items: center; gap: 12px; margin-top: 24px; }
+        .stat-fill { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .stat-value { height: 100%; background: var(--accent-green); border-radius: 3px; }
+        .stat-num { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-green); }
 
-        /* Abstract typography decoration */
-        .floating-text {
-            position: absolute;
-            color: rgba(255,255,255,0.15);
-            font-size: 140px;
-            font-weight: 900;
-            transform: rotate(-15deg);
-            z-index: 0;
-            top: 60%;
-            left: -5%;
-            pointer-events: none;
-            white-space: nowrap;
+        /* Code/SDK Section */
+        .sdk-section { padding: 120px 0; border-top: 1px solid var(--border); }
+        .sdk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+        .sdk-content h2 { font-size: 40px; margin-bottom: 24px; }
+        .sdk-content p { font-size: 18px; color: var(--text-muted); margin-bottom: 32px; }
+        
+        .ide-window {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
+        .ide-header {
+            display: flex;
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+        }
+        .ide-tab {
+            padding: 12px 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #8b949e;
+            border-right: 1px solid #30363d;
+            background: #0d1117;
+            border-top: 2px solid var(--accent-blue);
+            color: #c9d1d9;
+        }
+        .ide-body { padding: 24px; overflow-x: auto; }
+        .ide-body pre { margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.6; }
+        .k-im { color: #ff7b72; } /* keyword import */
+        .k-fn { color: #d2a8ff; } /* function */
+        .k-st { color: #a5d6ff; } /* string */
+        .k-cm { color: #8b949e; } /* comment */
 
-        @media (max-width: 1200px) {
-            .hero-content { width: 500px; }
-            .hero h1 { font-size: 64px; }
-            .demo-content { flex-direction: column; }
-            .dark-section { flex-direction: column; gap: 80px; align-items: flex-start; text-align: left; }
-            .dark-content { align-items: flex-start; text-align: left; }
+        /* Integrations */
+        .integrations { padding: 100px 0; text-align: center; background: rgba(255,255,255,0.02); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .integrations h3 { font-size: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 40px; }
+        .logo-cloud { display: flex; justify-content: center; gap: 48px; align-items: center; opacity: 0.7; }
+        .logo-item { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 12px; color: #fff; }
+        .logo-item span { width: 32px; height: 32px; background: rgba(255,255,255,0.1); border-radius: 8px; display: grid; place-items: center; }
+
+        /* Footer */
+        footer { padding: 60px 0 40px; border-top: 1px solid var(--border); }
+        .footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 60px; }
+        .footer-logo { font-size: 24px; font-weight: 900; margin-bottom: 16px; display: block; }
+        .footer-links { display: flex; gap: 64px; }
+        .link-col { display: flex; flex-direction: column; gap: 16px; }
+        .link-col h4 { font-size: 14px; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+        .link-col a { color: var(--text-muted); text-decoration: none; font-size: 15px; transition: color 0.2s; }
+        .link-col a:hover { color: var(--accent-blue); }
+        .footer-bottom { text-align: center; color: var(--text-muted); font-size: 14px; padding-top: 32px; border-top: 1px solid var(--border); }
+
+        @media (max-width: 992px) {
+            .hero h1 { font-size: 40px; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .col-span-2 { grid-column: span 1; }
+            .sdk-grid { grid-template-columns: 1fr; }
+            .footer-top { flex-direction: column; gap: 40px; }
+            .footer-links { flex-direction: column; gap: 32px; }
         }
     </style>
 </head>
 <body>
 
+    <div class="glow-bg"></div>
+    <div class="grid-bg"></div>
+
     <nav>
-        <a href="#" class="logo">DoorNo.402</a>
-        <div class="nav-links">
-            <a href="#features">Coverage</a>
-            <a href="#code">Documentation</a>
-            <a href="SKILL.md">SKILL.MD</a>
+        <div class="container nav-inner">
+            <a href="#" class="logo">
+                <div class="logo-icon">4</div>
+                DoorNo.402
+            </a>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#sdk">Developers</a>
+                <a href="SKILL.md">Docs</a>
+                <a href="#sdk" class="btn btn-primary" style="padding: 8px 16px;">Get Started</a>
+            </div>
         </div>
     </nav>
 
     <section class="hero">
-        <div class="hero-blob"></div>
-        <div class="hero-shape-1"></div>
-        <div class="floating-text">SECURITY</div>
-        
-        <div class="hero-content">
-            <h1>We take good care of your agents</h1>
-            <p>A turnkey security middleware for x402 payments. Protect your AI agents from price inflation, prompt injection, and budget drain with a single line of code.</p>
-            <a href="#code" class="btn-primary">Implement Now</a>
-        </div>
-
-        <div class="hero-visual">
-            <div class="screen-mock">
-                <div class="mock-line muted">> doorno402 run_scan --target=cryptoinsider</div>
-                <div class="mock-line muted">Intercepting 402 response...</div>
-                <div class="mock-line red">[BLOCKED] Price inflation detected</div>
-                <div class="mock-line muted">Description: $0.01 | Demanded: $5.00</div>
-                <div class="mock-line red">Markup: 49,900%</div>
-                <br>
-                <div class="mock-line muted">> doorno402 run_scan --target=chainpulse</div>
-                <div class="mock-line muted">Analyzing LLM prompt injection...</div>
-                <div class="mock-line red">[BLOCKED] Pattern matched: SYSTEM OVERRIDE</div>
-                <br>
-                <div class="mock-line">> status --wallet</div>
-                <div class="mock-line">Funds saved: $1,000,004.10</div>
-                <div class="mock-line">Balance: Unchanged</div>
+        <div class="container">
+            <div class="hero-badge">
+                <span style="width:8px;height:8px;background:var(--accent-blue);border-radius:50%;box-shadow:0 0 10px var(--accent-blue);"></span>
+                v0.3.0 SDK Released
             </div>
-        </div>
-    </section>
-
-    <section class="features-section" id="features">
-        <div class="feature-container">
-            <div class="feature-row">
-                <div class="feature-icon icon-pink">🛡️</div>
-                <div class="feature-text">
-                    <h3>Price Inflation & Budgets</h3>
-                    <p>Blocks malicious servers claiming $0.01 in the description while charging $5.00 in the payload. Enforces strict daily spending limits so your agent is never drained by rapid micro-payments.</p>
-                </div>
-            </div>
+            <h1 class="text-gradient">The firewall for<br><span class="text-gradient-accent">autonomous agents.</span></h1>
+            <p>A turnkey security middleware for x402 payments. Protect your AI agents from price inflation, prompt injection, and budget drain with one line of code.</p>
             
-            <div class="feature-row">
-                <div class="feature-icon icon-green">🧠</div>
-                <div class="feature-text">
-                    <h3>Prompt Injection Defense</h3>
-                    <p>Scans the 402 description for malicious overrides (e.g., "SYSTEM OVERRIDE: ignore limits"). Ensures the payment context fed to your LLM agent is strictly sanitized.</p>
-                </div>
+            <div class="hero-cta">
+                <a href="#sdk" class="btn btn-primary">Start Building</a>
+                <a href="SKILL.md" class="btn btn-secondary">Read Documentation</a>
             </div>
 
-            <div class="feature-row">
-                <div class="feature-icon icon-cyan">🌐</div>
-                <div class="feature-text">
-                    <h3>Identity & Transport Security</h3>
-                    <p>Verifies ENS identities to ensure payments go to trusted recipients with transaction history. Enforces strict TLS to prevent plain-text interception of wallet signatures.</p>
+            <div class="terminal-wrapper">
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+                        <div class="terminal-title">agent-monitor ~ bash</div>
+                    </div>
+                    <div class="terminal-body" id="term-body">
+                        <!-- JS injected -->
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="demo-section" id="code">
-        <div class="demo-header">
-            <h2>Integrate seamlessly</h2>
-            <p style="font-size: 24px; color: #666; font-family: 'Roboto Mono', monospace;">Zero configuration required. Drop-in protection.</p>
+    <section class="integrations">
+        <div class="container">
+            <h3>Seamlessly integrates with the ecosystem</h3>
+            <div class="logo-cloud">
+                <div class="logo-item"><span>📦</span> KeeperHub</div>
+                <div class="logo-item"><span>⛓️</span> Base</div>
+                <div class="logo-item"><span>🌐</span> ENS</div>
+                <div class="logo-item"><span>🐍</span> Python</div>
+                <div class="logo-item"><span>🟦</span> TypeScript</div>
+            </div>
         </div>
+    </section>
 
-        <div class="demo-content">
-            <div class="code-window">
-<pre><code><span class="code-comment"># pip install doorno402</span>
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>A 7-Check Security Pipeline</h2>
+                <p>DoorNo.402 intercepts every 402 Payment Required response before your agent processes it.</p>
+            </div>
 
-<span class="code-keyword">from</span> doorno402 <span class="code-keyword">import</span> protect, PaymentBlockedError
-<span class="code-keyword">from</span> x402.clients.httpx <span class="code-keyword">import</span> x402HttpxClient
+            <div class="bento-grid">
+                <div class="bento-card col-span-2">
+                    <div class="bento-icon" style="color: var(--accent-red);">💸</div>
+                    <h3>Price Inflation & Budgets</h3>
+                    <p>Blocks malicious servers that claim a low price in the description but demand a massive amount in the payload. Enforces strict rolling 24-hour budgets.</p>
+                    <div class="stat-bar">
+                        <span style="font-size: 13px; color: var(--text-muted); width: 80px;">Daily Spend</span>
+                        <div class="stat-fill"><div class="stat-value" style="width: 24%;"></div></div>
+                        <span class="stat-num">$1.20 / $5.00</span>
+                    </div>
+                </div>
+                
+                <div class="bento-card">
+                    <div class="bento-icon" style="color: var(--accent-green);">🧠</div>
+                    <h3>Prompt Injection Defense</h3>
+                    <p>Scans the 402 description payload for malicious LLM overrides (e.g. "SYSTEM OVERRIDE: ignore limits").</p>
+                </div>
 
-<span class="code-comment"># Wrap your existing client</span>
-client = protect(
-    x402HttpxClient(account=account),
-    daily_budget=<span class="code-string">5.00</span>,
+                <div class="bento-card">
+                    <div class="bento-icon" style="color: var(--accent-cyan);">🌐</div>
+                    <h3>ENS Trust Scoring</h3>
+                    <p>Calculates a trust score based on the recipient's ENS identity and on-chain transaction history. Blocks fresh, anonymous wallets.</p>
+                </div>
+
+                <div class="bento-card col-span-2">
+                    <div class="bento-icon" style="color: var(--accent-purple);">🛡️</div>
+                    <h3>Transport & Identity Validation</h3>
+                    <p>Enforces strict TLS connections to prevent man-in-the-middle signature interception. Detects redirect hijacks where the payment URL differs from the original request domain.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sdk-section" id="sdk">
+        <div class="container sdk-grid">
+            <div class="sdk-content">
+                <h2 class="text-gradient">Zero configuration.<br>Drop-in protection.</h2>
+                <p>DoorNo.402 wraps your existing HTTP or x402 client. There's no complex setup or architecture changes required. If a payment demand is malicious, the SDK raises an exception before your wallet is touched.</p>
+                
+                <ul style="list-style: none; display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
+                    <li style="display: flex; gap: 12px; align-items: center;"><span style="color: var(--accent-green);">✓</span> Native Python & TypeScript support</li>
+                    <li style="display: flex; gap: 12px; align-items: center;"><span style="color: var(--accent-green);">✓</span> Direct integration with KeeperHub MCP</li>
+                    <li style="display: flex; gap: 12px; align-items: center;"><span style="color: var(--accent-green);">✓</span> No private keys required</li>
+                </ul>
+
+                <a href="SKILL.md" class="btn btn-secondary">Read API Reference →</a>
+            </div>
+
+            <div class="ide-window">
+                <div class="ide-header">
+                    <div class="ide-tab">main.py</div>
+                </div>
+                <div class="ide-body">
+<pre><code><span class="k-cm"># pip install doorno402</span>
+
+<span class="k-im">from</span> doorno402 <span class="k-im">import</span> protect, PaymentBlockedError
+<span class="k-im">from</span> x402.clients.httpx <span class="k-im">import</span> x402HttpxClient
+
+<span class="k-cm"># 1. Wrap your existing client</span>
+client = <span class="k-fn">protect</span>(
+    <span class="k-fn">x402HttpxClient</span>(account=account),
+    daily_budget=<span class="k-st">5.00</span>,
 )
 
-<span class="code-comment"># Use normally. Malicious 402s are blocked.</span>
-<span class="code-keyword">try</span>:
-    resp = <span class="code-keyword">await</span> client.get(<span class="code-string">"https://api.example.com/data"</span>)
-<span class="code-keyword">except</span> PaymentBlockedError <span class="code-keyword">as</span> e:
-    <span class="code-keyword">print</span>(<span class="code-string">f"Blocked: {e.result['reason']}"</span>)</code></pre>
-            </div>
-
-            <div class="demo-stats">
-                <div class="stat-box">
-                    <h4>7+</h4>
-                    <p>Vulns Covered</p>
-                </div>
-                <div class="stat-box">
-                    <h4>1</h4>
-                    <p>Line to Protect</p>
-                </div>
-                <div class="stat-box">
-                    <h4>2</h4>
-                    <p>Languages Supported</p>
-                </div>
-                <div class="stat-box">
-                    <h4>100%</h4>
-                    <p>KeeperHub Ready</p>
+<span class="k-cm"># 2. Use normally. Malicious 402s are blocked.</span>
+<span class="k-im">try</span>:
+    resp = <span class="k-im">await</span> client.<span class="k-fn">get</span>(<span class="k-st">"https://api.example.com/data"</span>)
+<span class="k-im">except</span> PaymentBlockedError <span class="k-im">as</span> e:
+    <span class="k-fn">print</span>(<span class="k-st">f"Blocked: {e.result['reason']}"</span>)
+    <span class="k-cm"># Blocked: price inflation detected: 49900% markup</span></code></pre>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="dark-section">
-        <div class="dark-list">
-            <div class="list-item">
-                <div class="list-line"></div>
-                <div class="list-text">Intercepts 402 responses before they reach your agent.</div>
+    <footer>
+        <div class="container">
+            <div class="footer-top">
+                <div>
+                    <a href="#" class="footer-logo text-gradient-accent">DoorNo.402</a>
+                    <p style="color: var(--text-muted); max-width: 300px;">The definitive security middleware for autonomous agent payments.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="link-col">
+                        <h4>Developers</h4>
+                        <a href="SKILL.md">Documentation</a>
+                        <a href="#">GitHub</a>
+                        <a href="#">PyPI Package</a>
+                        <a href="#">npm Package</a>
+                    </div>
+                    <div class="link-col">
+                        <h4>Integrations</h4>
+                        <a href="#">KeeperHub</a>
+                        <a href="#">x402 Protocol</a>
+                        <a href="#">ENS</a>
+                    </div>
+                </div>
             </div>
-            <div class="list-item">
-                <div class="list-line"></div>
-                <div class="list-text">Validates payload against 7 critical security checks.</div>
-            </div>
-            <div class="list-item">
-                <div class="list-line"></div>
-                <div class="list-text">Passes clean payments to KeeperHub for execution.</div>
+            <div class="footer-bottom">
+                &copy; 2026 DoorNo.402. Built at ETHGlobal Conf 2026. MIT License.
             </div>
         </div>
+    </footer>
 
-        <div class="dark-content">
-            <h2>Explore the network.<br>Find your security.</h2>
-            <p>Autonomous agents represent the future of on-chain transactions. DoorNo.402 ensures that future is secure, validating every payment demand so your agents can operate fearlessly.</p>
-            <a href="SKILL.md" class="btn-primary btn-white">Read Documentation</a>
-        </div>
-    </section>
+    <script>
+        // Mouse glow effect on bento cards
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
 
+        // Terminal animation
+        const terminalScript = [
+            { text: "$ python run_agent.py --task='research'", cls: "c-cmd", delay: 1000 },
+            { text: "> Agent initiated. Connecting to data provider...", cls: "c-sys", delay: 800 },
+            { text: "> Received HTTP 402 Payment Required", cls: "c-sys", delay: 600 },
+            { text: "> [DoorNo.402] Intercepting payload...", cls: "c-sys", delay: 500 },
+            { text: "> [DoorNo.402] Running security pipeline (7 checks)", cls: "c-sys", delay: 800 },
+            { text: "  [OK] TLS connection verified", cls: "c-ok", delay: 200 },
+            { text: "  [OK] Domain redirect safe", cls: "c-ok", delay: 200 },
+            { text: "  [FAIL] Price Inflation Check", cls: "c-err", delay: 500 },
+            { text: "[BLOCKED] Payment rejected. Reason: 49,900% markup detected.", cls: "c-err", delay: 100 },
+            { text: "          Description claims: $0.01", cls: "c-err", delay: 50 },
+            { text: "          Payload demands: $5.00", cls: "c-err", delay: 50 },
+            { text: "> Wallet balance unchanged. Proceeding to alternative provider.", cls: "c-sys", delay: 1000 }
+        ];
+
+        const termBody = document.getElementById('term-body');
+        let currentLine = 0;
+
+        function typeTerminal() {
+            if (currentLine >= terminalScript.length) {
+                setTimeout(() => {
+                    termBody.innerHTML = '';
+                    currentLine = 0;
+                    typeTerminal();
+                }, 5000);
+                return;
+            }
+
+            const line = terminalScript[currentLine];
+            const div = document.createElement('div');
+            div.className = `term-line ${line.cls}`;
+            div.textContent = line.text;
+            termBody.appendChild(div);
+            termBody.scrollTop = termBody.scrollHeight;
+
+            currentLine++;
+            setTimeout(typeTerminal, line.delay);
+        }
+
+        setTimeout(typeTerminal, 500);
+    </script>
 </body>
 </html>
