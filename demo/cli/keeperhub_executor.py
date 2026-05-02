@@ -39,8 +39,7 @@ async def execute_payment(
         "network": "base-sepolia",
         "recipientAddress": recipient,
         "amount": f"{amount_usd:.6f}",
-        "tokenAddress": token_address,
-        "tokenConfig": '{"decimals":6,"symbol":"USDC"}',
+        "tokenAddress": token_address.lower(),
     }
     headers = {
         "Authorization": f"Bearer {api_key}",
