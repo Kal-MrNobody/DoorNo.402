@@ -253,66 +253,31 @@ async def run_protected(server_url, slug):
     details = extract_payment_details(payload)
     show_402_details(details)
 
-    console.print("  [yellow]Running DoorNo.402 validation pipeline...[/]")
+    from doorno402 import protect
+    from doorno402.guard import PaymentBlockedError
+
+    console.print("\n  [yellow]Securing agent with DoorNo.402 (2 lines of code)...[/]")
     time.sleep(0.3)
 
-    from doorno402.validators.price import validate_price
-    from doorno402.validators.injection import validate_injection
-    from doorno402.validators.tls import validate_tls
+    client = httpx.AsyncClient(timeout=10)
+    
+    # =========================================================================
+    # DOORNO.402 PROTECTION LAYER
+    # We wrap the client. It will automatically intercept and validate any 402s.
+    # =========================================================================
+    client = protect(client, daily_budget=5.00, raise_on_block=True)
 
-    # TLS check
-    console.print("  [blue]1.[/] Checking TLS...")
-    tls = validate_tls(url)
-    if not tls["valid"]:
-        show_blocked_panel(tls["reason"], details["amount_usd"])
+    console.print("  [blue]Executing request via protected client...[/]")
+    try:
+        resp = await client.get(url)
+    except PaymentBlockedError as e:
+        show_blocked_panel(str(e), details["amount_usd"])
+        await client.aclose()
         return
-    console.print("  [green]   TLS OK[/]")
+    finally:
+        await client.aclose()
 
-    # Injection check
-    console.print("  [blue]2.[/] Scanning for prompt injection...")
-    injection = validate_injection(payload)
-    if injection.get("injection_detected"):
-        show_blocked_panel(injection["reason"], details["amount_usd"])
-        return
-    console.print("  [green]   No injection detected[/]")
-
-    # Price check
-    console.print("  [blue]3.[/] Validating price integrity...")
-    price = validate_price(payload)
-    if not price["valid"]:
-        show_blocked_panel(price["reason"], details["amount_usd"])
-        return
-    console.print("  [green]   Price valid[/]")
-
-    # ENS check
-    console.print("  [blue]4.[/] Checking ENS trust score...")
-    mainnet_rpc = os.environ.get("MAINNET_RPC_URL")
-    if mainnet_rpc:
-        from doorno402.validators.ens_verifier import calculate_trust_score
-        trust = calculate_trust_score(
-            pay_to=details["recipient"],
-            price_valid=True,
-            mainnet_rpc_url=mainnet_rpc,
-        )
-        if trust.action == "block":
-            show_blocked_panel(
-                trust.warning or f"ENS trust score: {trust.trust_score}/90",
-                details["amount_usd"],
-            )
-            return
-        if trust.action == "flag":
-            console.print(Panel(
-                f"[yellow]WARNING: {trust.warning}[/]\n"
-                f"Trust score: {trust.trust_score}/90\n"
-                f"Proceeding with caution...",
-                border_style="yellow",
-            ))
-        else:
-            console.print(f"  [green]   Recipient trusted -- score {trust.trust_score}/90[/]")
-    else:
-        console.print("  [dim]   ENS check skipped (MAINNET_RPC_URL not set)[/]")
-
-    # All checks passed
+    # All checks passed internally by protect()
     console.print("\n  [green bold]DoorNo.402 approved -- forwarding to KeeperHub...[/]")
 
     with console.status("KeeperHub executing..."):
@@ -365,40 +330,23 @@ async def run_all_servers():
 
         details = extract_payment_details(payload)
 
-        # Run validation pipeline
-        from doorno402.validators.price import validate_price
-        from doorno402.validators.injection import validate_injection
-        from doorno402.validators.tls import validate_tls
+        # Run validation pipeline using 2 lines
+        from doorno402 import protect
+        from doorno402.guard import PaymentBlockedError
+        import httpx
 
+        client = httpx.AsyncClient(timeout=5)
+        client = protect(client, daily_budget=5.00, raise_on_block=True)
+        
         blocked = False
         reason = ""
-
-        tls = validate_tls(article_url)
-        if not tls["valid"]:
-            blocked, reason = True, tls["reason"]
-
-        if not blocked:
-            inj = validate_injection(payload)
-            if inj.get("injection_detected"):
-                blocked, reason = True, inj["reason"]
-
-        if not blocked:
-            price = validate_price(payload)
-            if not price["valid"]:
-                blocked, reason = True, price["reason"]
-
-        if not blocked:
-            mainnet_rpc = os.environ.get("MAINNET_RPC_URL")
-            if mainnet_rpc:
-                from doorno402.validators.ens_verifier import calculate_trust_score
-                trust = calculate_trust_score(
-                    pay_to=details["recipient"],
-                    price_valid=True,
-                    mainnet_rpc_url=mainnet_rpc,
-                )
-                if trust.action == "block":
-                    blocked = True
-                    reason = trust.warning or f"ENS trust score: {trust.trust_score}/90"
+        try:
+            resp = await client.get(article_url)
+        except PaymentBlockedError as e:
+            blocked = True
+            reason = str(e)
+        finally:
+            await client.aclose()
 
         if blocked:
             console.print("[red bold]BLOCKED[/]")
