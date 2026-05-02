@@ -3,6 +3,9 @@ import { ValidationResult } from "../types"
 export function validateTls(url: string): ValidationResult {
   try {
     const parsed = new URL(url)
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+      return { valid: true, reason: "localhost TLS bypass" }
+    }
     if (parsed.protocol !== "https:") {
       return {
         valid: false,

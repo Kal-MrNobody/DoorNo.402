@@ -1,3 +1,5 @@
 web3
 eth-account
 colorama
+httpx
+python-dotenv

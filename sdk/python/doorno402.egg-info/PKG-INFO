@@ -1,7 +1,9 @@
 Metadata-Version: 2.4
 Name: doorno402
-Version: 0.1.0
+Version: 0.3.0
 Requires-Dist: web3
 Requires-Dist: eth-account
 Requires-Dist: colorama
+Requires-Dist: httpx
+Requires-Dist: python-dotenv
 Dynamic: requires-dist
