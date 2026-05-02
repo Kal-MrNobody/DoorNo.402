@@ -227,6 +227,45 @@
         .solution-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .solution-list li::before { content: '✓'; color: var(--accent-green); font-weight: bold; }
 
+        /* Vulnerabilities Section */
+        #vulnerabilities { background: #ffffff; position: relative; z-index: 5; }
+        .vuln-table-container { overflow-x: auto; margin-bottom: 32px; box-shadow: var(--shadow-card); border-radius: 16px; border: 1px solid var(--border-color); background: #fff; }
+        .vuln-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .vuln-table th { padding: 16px 24px; background: #f8fafc; font-weight: 600; color: var(--text-primary); border-bottom: 1px solid var(--border-color); }
+        .vuln-table td { padding: 20px 24px; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
+        .vuln-table tr:last-child td { border-bottom: none; }
+        .vuln-table tr { transition: background 0.2s; }
+        .vuln-table tr:hover { background: #f8fafc; }
+        .vuln-id { font-family: var(--font-code); color: var(--accent-blue); font-weight: 700; font-size: 14px; }
+        .vuln-name { font-weight: 600; color: var(--text-primary); }
+        .status-pill { display: inline-block; padding: 4px 12px; background: #ecfdf5; color: var(--accent-green); font-size: 13px; font-weight: 700; border-radius: 100px; border: 1px solid #d1fae5; }
+        .vuln-note { text-align: center; font-size: 14px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+
+        /* Install Section */
+        #install { background: #f8fafc; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); padding-bottom: 160px; margin-top: -100px; padding-top: 200px; position: relative; z-index: 4; }
+        
+        .tabs-container { max-width: 800px; margin: 0 auto 48px; }
+        .tabs-nav { display: flex; gap: 32px; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); }
+        .tab-btn { background: none; border: none; padding: 0 0 12px; font-size: 16px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tab-btn.active { color: var(--accent-blue); border-bottom: 2px solid var(--accent-blue); }
+        .tab-btn:hover:not(.active) { color: var(--text-primary); }
+        
+        .tab-content { display: none; opacity: 0; transition: opacity 0.2s; }
+        .tab-content.active { display: block; opacity: 1; }
+        
+        .install-step { margin-bottom: 24px; }
+        .install-step:last-child { margin-bottom: 0; }
+        .code-block { background: var(--bg-code); border-radius: 12px; overflow: hidden; position: relative; }
+        .code-block pre { margin: 0; padding: 24px; font-family: var(--font-code); font-size: 14px; color: var(--text-code); line-height: 1.7; overflow-x: auto; }
+        .copy-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .copy-btn:hover { background: rgba(255,255,255,0.2); }
+        
+        .config-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1000px; margin: 0 auto; }
+        .config-card { background: var(--bg-card); padding: 24px; border-radius: 16px; box-shadow: var(--shadow-card); border: 1px solid var(--border-color); }
+        .config-card h4 { font-family: var(--font-code); color: var(--text-primary); font-size: 15px; margin-bottom: 4px; }
+        .config-type { font-family: var(--font-code); color: var(--accent-blue); font-size: 12px; margin-bottom: 16px; display: inline-block; }
+        .config-card p { font-size: 14px; margin: 0; line-height: 1.6; }
+
         @media (max-width: 768px) {
             h1 { font-size: 40px; }
             h2 { font-size: 32px; }
@@ -237,9 +276,11 @@
             .hero-actions { flex-direction: column; }
             #hero { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
             #problem { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
+            #install { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
             .two-column { grid-template-columns: 1fr; }
             .diagram-row { flex-direction: column; }
             .flow-arrow { transform: rotate(90deg); }
+            .config-cards { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -437,10 +478,172 @@ except PaymentBlockedError as e:
 
     <!-- 4. Vulnerabilities Section -->
     <section id="vulnerabilities">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">Coverage</div>
+                <h2>7 attack vectors. All covered.</h2>
+            </div>
+            
+            <div class="vuln-table-container animate-on-scroll delay-1">
+                <table class="vuln-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Vulnerability</th>
+                            <th>How the attack works</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="vuln-id">01</td>
+                            <td class="vuln-name">Price Inflation</td>
+                            <td>Claims $0.01, demands $5.00</td>
+                            <td><span class="status-pill">Covered</span></td>
+                        </tr>
+                        <tr>
+                            <td class="vuln-id">02</td>
+                            <td class="vuln-name">Unknown Recipient</td>
+                            <td>Pays wallet with no ENS name</td>
+                            <td><span class="status-pill">Covered</span></td>
+                        </tr>
+                        <tr>
+                            <td class="vuln-id">03</td>
+                            <td class="vuln-name">Redirect Hijack</td>
+                            <td>Redirects to attacker domain</td>
+                            <td><span class="status-pill">Covered</span></td>
+                        </tr>
+                        <tr>
+                            <td class="vuln-id">04</td>
+                            <td class="vuln-name">Prompt Injection</td>
+                            <td>LLM override in description</td>
+                            <td><span class="status-pill">Covered</span></td>
+                        </tr>
+                        <tr>
+                            <td class="vuln-id">05</td>
+                            <td class="vuln-name">Budget Drain</td>
+                            <td>Rapid $0.09 micro-payments</td>
+                            <td><span class="status-pill">Covered</span></td>
+                        </tr>
+                        <tr>
+                            <td class="vuln-id">06</td>
+                            <td class="vuln-name">TLS Downgrade</td>
+                            <td>Payment over plain HTTP</td>
+                            <td><span class="status-pill">Covered</span></td>
+                        </tr>
+                        <tr>
+                            <td class="vuln-id">07</td>
+                            <td class="vuln-name">Fake Delivery</td>
+                            <td>Takes payment, returns nothing</td>
+                            <td><span class="status-pill">Covered</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="vuln-note animate-on-scroll delay-2">Tested against 6 live attack servers on Base Sepolia testnet. All 6/6 attacks blocked. $0.00 lost.</p>
+        </div>
     </section>
 
     <!-- 5. Install Section -->
     <section id="install">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">Install</div>
+                <h2>Get started in 30 seconds</h2>
+            </div>
+            
+            <div class="tabs-container animate-on-scroll delay-1">
+                <div class="tabs-nav">
+                    <button class="tab-btn active" data-tab="tab-python">Python</button>
+                    <button class="tab-btn" data-tab="tab-typescript">TypeScript</button>
+                </div>
+                
+                <div class="tab-content active" id="tab-python">
+                    <div class="install-step">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code class="language-bash">pip install doorno402</code></pre>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code class="language-python">from doorno402 import protect, PaymentBlockedError
+from x402.clients.httpx import x402HttpxClient
+from eth_account import Account
+
+account = Account.from_key(os.environ["PRIVATE_KEY"])
+client = protect(
+    x402HttpxClient(account=account),
+    daily_budget=5.00,        # optional: daily spend limit
+    raise_on_block=True,      # optional: raise vs 403
+)</code></pre>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code class="language-python">try:
+    resp = await client.get("https://api.example.com/data")
+except PaymentBlockedError as e:
+    print(e.result["reason"])
+    # [DoorNo.402] BLOCKED -- description: $0.01,
+    # demanded: $5.00, inflation: 49900%, threshold: 5%</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-typescript">
+                    <div class="install-step">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code class="language-bash">npm install doorno402</code></pre>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code class="language-typescript">import { protect, PaymentBlockedError } from "doorno402"
+
+const safeFetch = protect(fetch, {
+  dailyBudget: 5.00,
+  mainnetRpcUrl: "https://cloudflare-eth.com"
+})</code></pre>
+                        </div>
+                    </div>
+                    <div class="install-step">
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre><code class="language-typescript">try {
+  const resp = await safeFetch("https://api.example.com/data")
+} catch (e) {
+  if (e instanceof PaymentBlockedError) {
+    console.log(e.result.reason)
+  }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-cards animate-on-scroll delay-2">
+                <div class="config-card">
+                    <h4>daily_budget</h4>
+                    <span class="config-type">float (optional)</span>
+                    <p>Set a max daily spend in USD. Payments that would exceed the limit are blocked automatically.</p>
+                </div>
+                <div class="config-card">
+                    <h4>mainnet_rpc_url</h4>
+                    <span class="config-type">string (optional)</span>
+                    <p>Ethereum mainnet RPC for ENS reverse resolution. Defaults to cloudflare-eth.com if not set.</p>
+                </div>
+                <div class="config-card">
+                    <h4>raise_on_block</h4>
+                    <span class="config-type">bool (default: False)</span>
+                    <p>If True, raises PaymentBlockedError. If False, silently converts the 402 to a 403 response.</p>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- 6. How It Works (Architecture) Section -->
