@@ -3,7 +3,7 @@ name: doorno402
 version: 0.3.0
 description: Security middleware for x402 payment requests. Intercepts and validates 402 responses before your agent signs any transaction.
 homepage: https://github.com/user/doorno402
-metadata: {"x402":{"supported":true,"role":"validator","chains":["eip155:8453","eip155:84532","eip155:1"],"vulnerabilities":["price-inflation","unknown-recipient","redirect-hijack","prompt-injection","budget-drain","tls-downgrade","fake-delivery"]},"integrations":{"keeperhub":true,"frames":true,"httpx":true,"fetch":true}}
+metadata: {"x402":{"supported":true,"role":"validator","chains":["eip155:8453","eip155:84532","eip155:1"],"vulnerabilities":["price-inflation","unknown-recipient","redirect-hijack","prompt-injection","budget-drain","tls-downgrade","fake-delivery"]},"integrations":{"keeperhub":true,"httpx":true,"fetch":true}}
 ---
 
 DoorNo.402 is a security middleware for x402 payment requests. It sits between your AI agent and the payment execution layer. When your agent receives a 402 Payment Required response, DoorNo.402 intercepts it, runs it through a 7-check security pipeline, and blocks malicious payments before any transaction is signed.
@@ -209,25 +209,7 @@ DoorNo.402 wraps the KeeperHub MCP client via `interceptAndForward()`. This inte
 
 ---
 
-## Integration with Frames.ag
 
-If you use Frames.ag AgentWallet for x402 payments, DoorNo.402 can validate payments before Frames signs them:
-
-```python
-# DoorNo.402 validates → then Frames.ag pays
-from doorno402 import protect
-
-# Wrap your httpx client that calls Frames.ag x402/fetch
-client = protect(httpx.AsyncClient())
-
-# When calling a paid API through Frames:
-resp = await client.post(
-    "https://frames.ag/api/wallets/USERNAME/actions/x402/fetch",
-    json={"url": "https://registry.frames.ag/api/service/exa/api/search"}
-)
-```
-
----
 
 ## Blocked Payment Log
 
