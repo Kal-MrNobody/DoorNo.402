@@ -27,7 +27,7 @@ if sys.platform == "win32":
 console = Console()
 
 # Config
-AGENT_ADDRESS = os.environ.get("AGENT_ADDRESS", "")
+AGENT_ADDRESS = os.environ.get("KEEPERHUB_WALLET") or os.environ.get("AGENT_ADDRESS", "")
 PRIVATE_KEY = os.environ.get("AGENT_PRIVATE_KEY", "")
 USDC_CONTRACT = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 RPC_URL = "https://sepolia.base.org"
