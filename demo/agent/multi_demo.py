@@ -118,7 +118,56 @@ async def main():
     await test_server("Web3Daily", SERVERS["Web3Daily"], "VULN-06")
     await test_server("ComboAttack", SERVERS["ComboAttack"], "VULN-ALL")
     
-    # Table output will go here
+    # Table output
+    from rich.console import Console
+    from rich.table import Table
+    
+    console = Console()
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("Site")
+    table.add_column("Vulnerability")
+    table.add_column("URL")
+    table.add_column("Before SDK")
+    table.add_column("After SDK")
+    table.add_column("Action / Reason")
+    table.add_column("BaseSepolia Scan Link")
+    
+    for r in results:
+        color = "red" if r["result"] == "BLOCKED" else "green"
+        table.add_row(
+            f"[{color}]{r['site']}[/{color}]",
+            f"[{color}]{r['vuln']}[/{color}]",
+            f"[{color}]{r['url']}[/{color}]",
+            f"[{color}]{r['before_sdk']}[/{color}]",
+            f"[{color}]{r['after_sdk']}[/{color}]",
+            f"[{color}]{r['action']} - {r['reason']}[/{color}]",
+            f"[{color}]{r['tx']}[/{color}]"
+        )
+    
+    table.add_row(
+        "[bold]TOTAL BLOCKED[/bold]",
+        f"[bold]{summary['blocked']}/{summary['total']}[/bold]",
+        "",
+        f"[bold]Saved: ${summary['saved_usd']:,.2f}[/bold]",
+        "[bold]Wallet balance unchanged[/bold]",
+        "",
+        ""
+    )
+    
+    print("\n")
+    console.print(table)
+    print("\n")
+    
+    output = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "results": results,
+        "summary": summary
+    }
+    
+    out_path = os.path.join(os.path.dirname(__file__), "scan_results.json")
+    with open(out_path, "w") as f:
+        json.dump(output, f, indent=2)
+    print(f"Results saved to {out_path}")
 
 if __name__ == "__main__":
     asyncio.run(main())
