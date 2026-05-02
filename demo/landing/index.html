@@ -320,6 +320,34 @@ try {
     </div>
   </section>
 
+  <section class="keeperhub" id="keeperhub" style="background: var(--bg);">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 3rem;">Built for KeeperHub</h2>
+      
+      <div class="grid-2 items-center">
+        <div>
+          <p style="font-size: 1.25rem; color: #475569; margin-bottom: 2rem;">DoorNo.402 validates. KeeperHub executes. Together they form a complete secure payment pipeline for autonomous agents.</p>
+          <div class="diagram-simple" style="margin-top: 0;">
+            Agent<br>↓<br>DoorNo.402 <span style="color:var(--green);">(validate)</span><br>↓<br>KeeperHub <span style="color:var(--blue);">(execute)</span><br>↓<br>Blockchain
+          </div>
+        </div>
+        <div class="code-window">
+          <div class="code-header">KeeperHub Integration</div>
+          <pre class="code-body"><code class="language-typescript">import { interceptAndForward } from "doorno402/mcp"
+import { keeperHubClient } from "./agent"
+
+// Wrap your KeeperHub MCP client
+const safeClient = interceptAndForward(keeperHubClient)
+
+// Your agent uses the safe client exactly as before
+// If it tries to pay a malicious invoice, 
+// interceptAndForward blocks it automatically.
+await agent.run(safeClient)</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <script>
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
