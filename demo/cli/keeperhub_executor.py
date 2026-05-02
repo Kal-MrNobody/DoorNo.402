@@ -76,7 +76,7 @@ async def execute_payment(
                 status=status_data.get("status", status),
                 tx_hash=status_data.get("transactionHash"),
                 tx_link=status_data.get("transactionLink"),
-                error=None,
+                error=status_data.get("error"),
             )
     except Exception as e:
         return ExecutionResult(
@@ -97,7 +97,7 @@ async def get_execution_status(
     headers = {"Authorization": f"Bearer {api_key}"}
     try:
         async with httpx.AsyncClient(timeout=15) as client:
-            for _ in range(10):
+            for _ in range(30): # Poll up to 90 seconds (testnets can be slow)
                 resp = await client.get(
                     f"{KEEPERHUB_BASE}/api/execute/{execution_id}/status",
                     headers=headers,
