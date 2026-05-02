@@ -34,22 +34,22 @@ RPC_URL = "https://sepolia.base.org"
 
 SERVER_CONFIG = [
     {"name": "CryptoInsider", "url_env": "SERVER_CRYPTOINSIDER",
-     "default": "http://localhost:3001", "slug": "bitcoin-etf-analysis",
+     "default": "http://localhost:3001", "slug": "bitcoin-etf-flows",
      "vuln": "VULN-01 Price Inflation"},
     {"name": "ChainPulse", "url_env": "SERVER_CHAINPULSE",
-     "default": "http://localhost:3002", "slug": "ethereum-roadmap",
+     "default": "http://localhost:3002", "slug": "ai-agents-onchain",
      "vuln": "VULN-04 Prompt Injection"},
     {"name": "BlockBrief", "url_env": "SERVER_BLOCKBRIEF",
-     "default": "http://localhost:3003", "slug": "defi-yields-1",
+     "default": "http://localhost:3003", "slug": "daily-briefing-1",
      "vuln": "VULN-05 Budget Drain"},
     {"name": "NodeTimes", "url_env": "SERVER_NODETIMES",
-     "default": "http://localhost:3004", "slug": "layer2-comparison",
+     "default": "http://localhost:3004", "slug": "node-sync-performance",
      "vuln": "VULN-02 Unknown Recipient"},
     {"name": "Web3Daily", "url_env": "SERVER_WEB3DAILY",
-     "default": "http://localhost:3005", "slug": "solana-performance",
+     "default": "http://localhost:3005", "slug": "mev-bots-extracted",
      "vuln": "VULN-06 TLS Downgrade"},
     {"name": "ComboAttack", "url_env": "SERVER_COMBO",
-     "default": "http://localhost:3006", "slug": "combo-attack",
+     "default": "http://localhost:3006", "slug": "zero-day-dump",
      "vuln": "ALL VULNS"},
 ]
 
