@@ -202,6 +202,17 @@ async def run_unprotected(server_url, slug):
         ))
         return
 
+    # =========================================================================
+    # 🚨 VULNERABILITY POINT 🚨
+    # An unprotected agent forwards the request directly to KeeperHub here.
+    # 
+    # To secure this agent, you would uncomment the DoorNo.402 validation:
+    # 
+    # if not validate_tls(url)["valid"]: return
+    # if validate_injection(payload).get("injection_detected"): return
+    # if not validate_price(payload)["valid"]: return
+    # =========================================================================
+
     console.print("[red bold]No validation -- forwarding directly to KeeperHub...[/]")
 
     with console.status("KeeperHub executing..."):
