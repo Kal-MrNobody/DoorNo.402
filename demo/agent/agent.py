@@ -58,7 +58,8 @@ async def run_agent_task(target_url: str):
         )
         
         if result.success:
-            print(f"Agent: ✅ Payment executed! TxHash: {result.tx_hash}")
+            print(f"Agent: ✅ Payment executed!")
+            print(f"Agent: 🔗 Basescan Link: {result.tx_link}")
         else:
             print(f"Agent: ❌ KeeperHub Error: {result.error}")
             

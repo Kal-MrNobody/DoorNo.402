@@ -153,7 +153,7 @@ def show_blocked_panel(reason, amount_usd):
 def show_execution_result(result, amount_usd):
     table = Table(show_header=False, border_style="dim white", box=box.SIMPLE)
     table.add_column("Field", style="bold")
-    table.add_column("Value")
+    table.add_column("Value", overflow="fold")
     table.add_row("ExecutionId", result.execution_id)
     table.add_row("Status", f"[green]{result.status}[/]")
     if result.tx_hash:
