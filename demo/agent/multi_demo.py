@@ -114,6 +114,9 @@ async def main():
     await test_server("CryptoInsider", SERVERS["CryptoInsider"], "VULN-01")
     await test_server("ChainPulse", SERVERS["ChainPulse"], "VULN-04")
     await test_server("BlockBrief", SERVERS["BlockBrief"], "VULN-05")
+    await test_server("NodeTimes", SERVERS["NodeTimes"], "VULN-02")
+    await test_server("Web3Daily", SERVERS["Web3Daily"], "VULN-06")
+    await test_server("ComboAttack", SERVERS["ComboAttack"], "VULN-ALL")
     
     # Table output will go here
 
