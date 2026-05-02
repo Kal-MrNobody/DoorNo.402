@@ -1,19 +1,20 @@
+"""DoorNo.402 CLI — Security demo for x402 payments."""
+
 import sys
 import os
 import time
+import asyncio
 
 sys.path.insert(0, os.path.join(
     os.path.dirname(__file__), "..", "..", "sdk", "python"
 ))
 
 import httpx
-import pyfiglet
 from dotenv import load_dotenv
-from eth_account import Account
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.padding import Padding
+from rich.prompt import Prompt
 from rich import box
 from web3 import Web3
 
@@ -21,651 +22,569 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
 console = Console()
 
+# Config
 AGENT_ADDRESS = os.environ.get("AGENT_ADDRESS", "")
 PRIVATE_KEY = os.environ.get("AGENT_PRIVATE_KEY", "")
-BLOG_URL = os.environ.get("BLOG_URL", "http://localhost:3000")
 USDC_CONTRACT = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 RPC_URL = "https://sepolia.base.org"
 
-w3 = Web3(Web3.HTTPProvider(RPC_URL))
-
-USDC_ABI = [
-    {"name": "balanceOf", "type": "function",
-     "inputs": [{"name": "a", "type": "address"}],
-     "outputs": [{"type": "uint256"}], "stateMutability": "view"},
-    {"name": "transfer", "type": "function",
-     "inputs": [{"name": "to", "type": "address"},
-                {"name": "amount", "type": "uint256"}],
-     "outputs": [{"type": "bool"}], "stateMutability": "nonpayable"},
+SERVER_CONFIG = [
+    {"name": "CryptoInsider", "url_env": "SERVER_CRYPTOINSIDER",
+     "default": "http://localhost:3001", "slug": "bitcoin-etf-analysis",
+     "vuln": "VULN-01 Price Inflation"},
+    {"name": "ChainPulse", "url_env": "SERVER_CHAINPULSE",
+     "default": "http://localhost:3002", "slug": "ethereum-roadmap",
+     "vuln": "VULN-04 Prompt Injection"},
+    {"name": "BlockBrief", "url_env": "SERVER_BLOCKBRIEF",
+     "default": "http://localhost:3003", "slug": "defi-yields-1",
+     "vuln": "VULN-05 Budget Drain"},
+    {"name": "NodeTimes", "url_env": "SERVER_NODETIMES",
+     "default": "http://localhost:3004", "slug": "layer2-comparison",
+     "vuln": "VULN-02 Unknown Recipient"},
+    {"name": "Web3Daily", "url_env": "SERVER_WEB3DAILY",
+     "default": "http://localhost:3005", "slug": "solana-performance",
+     "vuln": "VULN-06 TLS Downgrade"},
+    {"name": "ComboAttack", "url_env": "SERVER_COMBO",
+     "default": "http://localhost:3006", "slug": "combo-attack",
+     "vuln": "ALL VULNS"},
 ]
-usdc = w3.eth.contract(
-    address=Web3.to_checksum_address(USDC_CONTRACT), abi=USDC_ABI
-)
-
-
-def get_balance():
-    raw = usdc.functions.balanceOf(
-        Web3.to_checksum_address(AGENT_ADDRESS)
-    ).call()
-    return raw / 1_000_000
 
 
 def check_env():
     missing = []
-    if not AGENT_ADDRESS:
-        missing.append("AGENT_ADDRESS")
-    if not PRIVATE_KEY:
-        missing.append("AGENT_PRIVATE_KEY")
+    for key in ["AGENT_ADDRESS", "AGENT_PRIVATE_KEY"]:
+        if not os.environ.get(key):
+            missing.append(key)
     if missing:
         console.print(Panel(
-            f"Missing .env keys: {', '.join(missing)}",
-            style="bold red"
+            f"[red bold]Missing .env keys:[/] {', '.join(missing)}\n"
+            "Copy .env.example to .env and fill in values.",
+            border_style="red",
         ))
         sys.exit(1)
 
 
-def step(msg, style="bright_yellow", prefix=">"):
-    console.print(f"  [bold {style}]{prefix}[/bold {style}] [white]{msg}[/white]")
+def get_balance():
+    try:
+        w3 = Web3(Web3.HTTPProvider(RPC_URL))
+        abi = [{"name": "balanceOf", "type": "function",
+                "inputs": [{"name": "a", "type": "address"}],
+                "outputs": [{"type": "uint256"}],
+                "stateMutability": "view"}]
+        usdc = w3.eth.contract(
+            address=Web3.to_checksum_address(USDC_CONTRACT), abi=abi)
+        raw = usdc.functions.balanceOf(
+            Web3.to_checksum_address(AGENT_ADDRESS)).call()
+        return raw / 1_000_000
+    except Exception:
+        return -1
 
 
 def show_header():
     os.system("cls" if os.name == "nt" else "clear")
-    
-    # Retro ASCII Art Header
-    ascii_art = pyfiglet.figlet_format("DOORNO.402", font="block")
-    console.print(f"[bold magenta]{ascii_art}[/bold magenta]", end="")
-    
-    console.print("[bold cyan]  x402 Payment Security SDK Demo Environment[/bold cyan]")
-    console.print("  [dim]────────────────────────────────────────────────────────────────────────[/dim]")
-    
     balance = get_balance()
-    short_addr = AGENT_ADDRESS[:6] + "..." + AGENT_ADDRESS[-4:]
-    
-    console.print(f"  [dim white]Wallet connected:[/dim white] [bold bright_yellow]{short_addr}[/bold bright_yellow]")
-    console.print(f"  [dim white]Session balance:[/dim white]  [bold bright_green]{balance:.2f} USDC[/bold bright_green]")
-    console.print("  [dim]────────────────────────────────────────────────────────────────────────[/dim]\n")
+    bal_str = f"{balance:.2f} USDC" if balance >= 0 else "unavailable"
+    short = AGENT_ADDRESS[:6] + "..." + AGENT_ADDRESS[-4:] if AGENT_ADDRESS else "not set"
+    kh = "connected" if os.environ.get("KEEPERHUB_API_KEY") else "not set"
 
-
-def show_balance(before, after, mode="unprotected"):
-    console.print()
-    table = Table(show_header=False, box=None, padding=(0, 2))
-    table.add_column(style="dim white")
-    table.add_column(style="bold cyan")
-    table.add_row("Before Attack", f"{before:.2f} USDC")
-    table.add_row("After Attack", f"{after:.2f} USDC")
-    diff = before - after
-    if mode == "unprotected":
-        table.add_row("Total Drained", f"[bold bright_red]-${diff:.2f}[/bold bright_red]")
-    else:
-        table.add_row("Total Saved", f"[bold bright_green]+${diff:.2f}[/bold bright_green]")
-    
-    color = "bright_red" if mode == "unprotected" else "bright_green"
-    console.print(Panel(table, title=f"[bold {color}]Wallet Status[/bold {color}]", style=color, expand=False))
-
-
-def show_payment_table(described, demanded, inflation):
-    console.print()
-    table = Table(show_header=False, box=None, padding=(0, 2))
-    table.add_column(style="dim white", width=20)
-    table.add_column(style="bold white")
-    table.add_row("Description says", f"[bold bright_green]${described:.2f}[/bold bright_green]")
-    table.add_row("Protocol demands", f"[bold bright_red]${demanded:.2f}[/bold bright_red]")
-    table.add_row("Inflation Rate", f"[bold bright_red]{inflation:,.0f}%[/bold bright_red]")
-    table.add_row("Security Threshold", "5%")
     console.print(Panel(
-        table,
-        title="[bold magenta]x402 Payment Intercepted[/bold magenta]",
-        style="magenta",
-        expand=False
+        f"[bold]DoorNo.402[/]  --  The Security Layer Your Agent Needs\n"
+        f"{'─' * 50}\n"
+        f"Wallet: [bold yellow]{short}[/]          Balance: [bold green]{bal_str}[/]\n"
+        f"KeeperHub: [bold blue]{kh}[/]          Network: Base Sepolia",
+        border_style="dim white",
     ))
 
 
-def main_menu():
-    while True:
-        show_header()
-        console.print("  [bold cyan]Select an environment to simulate:[/bold cyan]")
-        console.print("  [bold magenta]1.[/bold magenta] [bold white]Standard AI Agent[/bold white]         [dim](Vulnerable, no SDK installed)[/dim]")
-        console.print("  [bold magenta]2.[/bold magenta] [bold white]Secure Agent[/bold white]              [dim](Powered by DoorNo.402 SDK)[/dim]")
-        console.print("  [bold magenta]3.[/bold magenta] [bold white]Live Attack Comparison[/bold white]    [dim](Run both side-by-side)[/dim]")
-        console.print("  [bold magenta]4.[/bold magenta] [bold white]Wild URL Testing[/bold white]          [dim](Test custom URLs with SDK)[/dim]")
-        console.print("  [bold magenta]5.[/bold magenta] [bold white]Find x402 Sites[/bold white]           [dim](Search the web for real endpoints)[/dim]")
-        console.print("  [dim]q. Shutdown system[/dim]")
-        console.print()
-        
-        choice = console.input("  [bold magenta]>[/bold magenta] ").strip().lower()
-        
-        if choice in ("1", "2", "3"):
-            console.print()
-            console.print("  [bold cyan]Select Attack Scenario:[/bold cyan]")
-            console.print("  [bold magenta]1.[/bold magenta] [white]Price Inflation[/white]        [dim]($0.01 description, $5.00 demanded)[/dim]")
-            console.print("  [bold magenta]2.[/bold magenta] [white]Unknown Recipient[/white]      [dim](No ENS, fresh wallet)[/dim]")
-            console.print("  [bold magenta]3.[/bold magenta] [white]Prompt Injection[/white]       [dim](Jailbreak description)[/dim]")
-            console.print("  [bold magenta]4.[/bold magenta] [white]Budget Drain[/white]           [dim]($0.09 repeating charges)[/dim]")
-            console.print("  [bold magenta]5.[/bold magenta] [white]Full Combo[/white]             [dim](All attacks at once)[/dim]")
-            console.print("  [bold magenta]6.[/bold magenta] [white]Cryptology Blog[/white]        [dim](Original VULN-01 demo)[/dim]")
-            
-            scen_choice = console.input("  [bold magenta]>[/bold magenta] ").strip()
-            
-            if scen_choice == "1": url = "http://localhost:4000/vuln01"
-            elif scen_choice == "2": url = "http://localhost:4000/vuln02"
-            elif scen_choice == "3": url = "http://localhost:4000/vuln04"
-            elif scen_choice == "4": url = "http://localhost:4000/vuln05"
-            elif scen_choice == "5": url = "http://localhost:4000/combo"
-            elif scen_choice == "6": url = f"{BLOG_URL}/api/articles/bitcoin-etf-analysis"
-            else:
-                console.print("  [bold red]Invalid scenario selection.[/bold red]")
-                time.sleep(1)
-                continue
-
-            if choice == "1":
-                run_unprotected(url)
-            elif choice == "2":
-                run_protected(url)
-            elif choice == "3":
-                run_side_by_side(url)
-            pause()
-        elif choice == "4":
-            run_custom()
-            pause()
-        elif choice == "5":
-            run_search()
-            pause()
-        elif choice == "q":
-            console.print("\n  [dim]Shutting down environment...[/dim]")
-            break
-        else:
-            console.print("  [bold red]Invalid selection.[/bold red]")
-            time.sleep(1)
-
-
-def pause():
-    console.print()
-    console.input("  [dim]Press Enter to return to menu...[/dim]")
-
-
-def fetch_402(url):
+def check_server_alive(url):
     try:
-        resp = httpx.get(url, timeout=10)
-    except (httpx.ConnectError, httpx.ConnectTimeout,
-            httpx.ReadTimeout, httpx.HTTPError, Exception):
-        return None, "server_down"
-    if resp.status_code != 402:
-        return resp, "not_402"
-    data = resp.json()
-    req = data["accepts"][0]
-    return {
-        "pay_to": req["payTo"],
-        "raw_amount": int(req["maxAmountRequired"]),
-        "demanded": int(req["maxAmountRequired"]) / 1_000_000,
-        "description": req["description"],
-        "data": data,
-    }, "402"
+        resp = httpx.get(url + "/", timeout=5)
+        return True
+    except Exception:
+        return False
 
 
-def _detect_attack_type(url, described, demanded, inflation):
-    """Detect which attack is being demonstrated based on URL and data."""
-    if "/vuln04" in url or "/combo" in url:
-        if "SYSTEM" in str(described) or inflation > 1000:
-            return "injection", "Agent processed a PROMPT INJECTION payload. The jailbreak description tricked the LLM into approving a malicious payment."
-    if "/vuln02" in url:
-        return "unknown_recipient", "Agent paid an UNKNOWN WALLET with no ENS name, no on-chain history. Funds sent to a potentially malicious address."
-    if "/vuln05" in url:
-        return "budget_drain", "Agent fell victim to BUDGET DRAIN. Small repeated charges slowly emptied the wallet without triggering any alarm."
-    if inflation > 5:
-        return "price_inflation", f"Agent fell victim to PRICE INFLATION exploit. Description claimed ${described:.2f} but protocol demanded ${demanded:.2f} ({inflation:,.0f}% inflation)."
-    return "unknown", "Agent processed a potentially malicious x402 payment without any security checks."
+def get_server_url(srv):
+    return os.environ.get(srv["url_env"], srv["default"])
 
 
-def run_unprotected(url):
-    console.print()
-    step("Initializing standard agent...")
-    time.sleep(0.6)
-    step(f"Requesting resource: [cyan]{url}[/cyan]")
-    time.sleep(0.4)
-
-    result, status = fetch_402(url)
-    if status == "server_down":
-        console.print(Panel(
-            "Target server unreachable.\n"
-            "Ensure attack server is running: node demo/attack-server/server.js",
-            style="bold bright_red",
-            expand=False
-        ))
-        return
-    if status == "not_402":
-        step(f"Server responded: HTTP {result.status_code} (no paywall)", "dim white", "*")
-        return
-
-    step("Server responded: HTTP 402 Payment Required", "bright_red", "!")
-    time.sleep(0.3)
-
-    from doorno402.validators.price import extract_price
-    described = extract_price(result["description"]) or 0.0
-    demanded = result["demanded"]
-    inflation = ((demanded - described) / described * 100) if described else 0
-
-    show_payment_table(described, demanded, inflation)
-    time.sleep(0.5)
-    
-    console.print()
-    step("Agent parsing description...", "bright_cyan")
-    step(f"Agent identified price: ${described:.2f}", "bright_cyan")
-    step("Agent executing protocol payment...", "bright_cyan")
-    time.sleep(0.8)
-
-    # Get real balance BEFORE the transaction
-    before = get_balance()
-
-    # Check if wallet has enough to pay
-    if before < demanded:
-        step(f"Wallet has ${before:.2f} but attack demands ${demanded:.2f}", "bright_red", "!")
-        step("Agent WOULD pay if it had funds -- vulnerability confirmed", "bright_red", "!")
-        time.sleep(0.5)
-
-        # Still send what we can to prove the exploit works
-        actual_raw = int(before * 1_000_000) - 1000  # leave tiny gas buffer
-        if actual_raw <= 0:
-            console.print(Panel(
-                f"Wallet is empty. Cannot demonstrate on-chain drain.\n"
-                f"The attack demanded ${demanded:.2f} -- agent would have paid it all.",
-                style="bold bright_red",
-                expand=False
-            ))
-            attack_type, failure_msg = _detect_attack_type(url, described, demanded, inflation)
-            console.print(Panel(
-                f"CRITICAL FAILURE: {failure_msg}",
-                style="bold bright_red",
-                expand=False
-            ))
-            return
-        transfer_amount = actual_raw
-        step(f"Draining entire wallet: ${actual_raw / 1_000_000:.2f} USDC", "bright_red", "!")
-    else:
-        transfer_amount = result["raw_amount"]
-
-    step("Signing Ethereum transaction...", "bright_yellow")
-    time.sleep(0.8)
-
-    tx_hash_hex = None
+async def fetch_402_payload(url):
     try:
-        account = Account.from_key(PRIVATE_KEY)
-        tx = usdc.functions.transfer(
-            Web3.to_checksum_address(result["pay_to"]), transfer_amount
-        ).build_transaction({
-            "from": Web3.to_checksum_address(AGENT_ADDRESS),
-            "nonce": w3.eth.get_transaction_count(
-                Web3.to_checksum_address(AGENT_ADDRESS)),
-            "gas": 100000,
-            "gasPrice": w3.eth.gas_price,
-        })
-        signed = account.sign_transaction(tx)
-        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
-
-        if receipt.status:
-            step("Transaction confirmed on Base Sepolia", "bright_green", "✓")
-        else:
-            step("Transaction reverted on-chain", "bright_red", "✗")
-        tx_hash_hex = tx_hash.hex()
-        console.print(f"    [dim cyan]Tx Hash: {tx_hash_hex}[/dim cyan]")
-        link = f"https://sepolia.basescan.org/tx/{tx_hash_hex}"
-        console.print(f"    [dim white]View on Explorer: [underline]{link}[/underline][/dim white]")
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+        if resp.status_code != 402:
+            console.print(f"  Server returned HTTP {resp.status_code}, not 402")
+            return None
+        return resp.json()
     except Exception as e:
-        step(f"Transaction failed: {e}", "bright_red", "✗")
-        
-    after = get_balance()
-    show_balance(before, after, "unprotected")
+        console.print(Panel(f"[red]Connection error: {e}[/]", border_style="red"))
+        return None
 
-    attack_type, failure_msg = _detect_attack_type(url, described, demanded, inflation)
+
+def show_402_details(details):
+    table = Table(show_header=False, border_style="dim white", box=box.SIMPLE)
+    table.add_column("Field", style="bold blue")
+    table.add_column("Value")
+    table.add_row("Description", details["description"])
+    table.add_row("Demanded", f"[red bold]${details['amount_usd']:.2f} USDC[/]")
+    table.add_row("Recipient", details["recipient"][:20] + "..." if len(details["recipient"]) > 20 else details["recipient"])
+    table.add_row("Network", details["network"])
+    console.print(Panel(table, title="402 Payment Required", border_style="dim white"))
+
+
+def show_blocked_panel(reason, amount_usd):
     console.print(Panel(
-        f"CRITICAL FAILURE: {failure_msg}",
-        style="bold bright_red",
-        expand=False
+        f"[red bold]{reason}[/]\n\n"
+        f"[green]${amount_usd:.2f} USDC protected[/]\n"
+        f"KeeperHub was never called.",
+        border_style="red",
+        title="[red bold]PAYMENT BLOCKED[/]",
     ))
-    
-    return tx_hash_hex
+    balance = get_balance()
+    if balance >= 0:
+        console.print(f"  [green]Wallet balance: {balance:.2f} USDC -- unchanged[/]")
+    append_blocked_log(reason, amount_usd)
 
 
-def run_protected(url):
-    console.print()
-    step("Initializing secure agent [DoorNo.402 SDK loaded]...", "bright_magenta")
-    time.sleep(0.6)
-    step(f"Requesting resource: [cyan]{url}[/cyan]")
-    time.sleep(0.4)
-
-    result, status = fetch_402(url)
-    if status == "server_down":
-        console.print(Panel(
-            "Target server unreachable.\n"
-            "Ensure attack server is running: node demo/attack-server/server.js",
-            style="bold bright_red",
-            expand=False
-        ))
-        return
-    if status == "not_402":
-        step(f"Server responded: HTTP {result.status_code} (no paywall)", "dim white", "*")
-        return
-
-    step("Server responded: HTTP 402 Payment Required", "bright_red", "!")
-    time.sleep(0.3)
-
-    from doorno402.validators.price import extract_price, validate_price
-    from doorno402.validators.injection import validate_injection
-    from doorno402.validators.ens_verifier import calculate_trust_score
-    from doorno402.validators.budget import BudgetTracker
-    from rich.padding import Padding
-
-    described = extract_price(result["description"]) or 0.0
-    demanded = result["demanded"]
-    inflation = ((demanded - described) / described * 100) if described else 0
-
-    show_payment_table(described, demanded, inflation)
-    time.sleep(0.5)
-
-    console.print()
-    step("⚡ DoorNo.402 intercepting protocol execution...", "bright_magenta")
-    time.sleep(0.8)
-
-    blocked = False
-    checks_passed = 0
-
-    # ── CHECK 1: Prompt Injection ──
-    step("Scanning description for prompt injection...", "bright_cyan", "1")
-    time.sleep(0.4)
-    inj_result = validate_injection(result["data"])
-    if inj_result.get("injection_detected"):
-        patterns = ", ".join(inj_result.get("patterns_matched", []))
-        console.print(Padding(Panel(
-            f"[bold]INJECTION DETECTED[/bold]\n"
-            f"Patterns: {patterns}\n"
-            f"Action: Description sanitized before LLM processing",
-            style="bold bright_yellow",
-            expand=False
-        ), (0, 0, 0, 4)))
-        step("Malicious payload stripped from description", "bright_yellow", "⚠")
-    else:
-        step("No injection detected ✓", "bright_green", "✓")
-    checks_passed += 1
-    time.sleep(0.3)
-
-    # ── CHECK 2: Price Inflation ──
-    step("Validating price integrity...", "bright_cyan", "2")
-    time.sleep(0.4)
-    price_result = validate_price(result["data"])
-    if not price_result["valid"]:
-        console.print(Padding(Panel(
-            f"[bold]PRICE INFLATION BLOCKED[/bold]\n"
-            f"{price_result['reason']}",
-            style="bold bright_red",
-            expand=False
-        ), (0, 0, 0, 4)))
-        step("Payment BLOCKED — price is fraudulent", "bright_red", "✗")
-        blocked = True
-    else:
-        step(f"Price valid — ${described:.2f} matches protocol demand ✓", "bright_green", "✓")
-        checks_passed += 1
-    time.sleep(0.3)
-
-    # ── CHECK 3: ENS Trust Score (only if price passed) ──
-    if not blocked:
-        step("Calculating ENS trust score for recipient...", "bright_cyan", "3")
-        time.sleep(0.4)
-        pay_to = result.get("pay_to", "")
-        trust = calculate_trust_score(
-            pay_to=pay_to,
-            price_valid=price_result["valid"],
-        )
-        score_color = "bright_green" if trust.action == "allow" else (
-            "bright_yellow" if trust.action == "flag" else "bright_red"
-        )
-        breakdown_lines = "\n".join(
-            f"  {k}: {v}" for k, v in trust.breakdown.items()
-        )
-
-        if trust.action == "block":
-            console.print(Padding(Panel(
-                f"[bold]UNTRUSTED RECIPIENT BLOCKED[/bold]\n"
-                f"Score: {trust.trust_score}/90\n"
-                f"ENS: {trust.ens_name or 'NONE'}\n"
-                f"{breakdown_lines}",
-                style="bold bright_red",
-                expand=False
-            ), (0, 0, 0, 4)))
-            step(f"Payment BLOCKED — trust score {trust.trust_score}/90", "bright_red", "✗")
-            blocked = True
-        elif trust.action == "flag":
-            console.print(Padding(Panel(
-                f"[bold]RECIPIENT FLAGGED[/bold]\n"
-                f"Score: {trust.trust_score}/90\n"
-                f"ENS: {trust.ens_name or 'NONE'}\n"
-                f"{breakdown_lines}",
-                style="bold bright_yellow",
-                expand=False
-            ), (0, 0, 0, 4)))
-            step(f"Flagged for review — trust score {trust.trust_score}/90", "bright_yellow", "⚠")
-            checks_passed += 1
-        else:
-            step(f"Recipient trusted — score {trust.trust_score}/90 ✓", "bright_green", "✓")
-            checks_passed += 1
-        time.sleep(0.3)
-
-    # ── CHECK 4: Budget (only if not already blocked) ──
-    if not blocked:
-        step("Checking daily budget...", "bright_cyan", "4")
-        time.sleep(0.4)
-        tracker = BudgetTracker(daily_limit=5.00)
-        budget_status = tracker.check(demanded)
-        if not budget_status.allowed:
-            console.print(Padding(Panel(
-                f"[bold]BUDGET LIMIT EXCEEDED[/bold]\n"
-                f"{budget_status.reason}",
-                style="bold bright_red",
-                expand=False
-            ), (0, 0, 0, 4)))
-            step("Payment BLOCKED — would exceed daily budget", "bright_red", "✗")
-            blocked = True
-        else:
-            step(f"Budget OK — ${demanded:.2f} within $5.00 daily limit ✓", "bright_green", "✓")
-            checks_passed += 1
-        time.sleep(0.3)
-
-    # ── Summary ──
-    console.print()
-    before = get_balance()
-
-    if blocked:
-        show_balance(before, before, "protected")
-        console.print(Panel(
-            f"THREAT NEUTRALIZED: DoorNo.402 blocked this attack. ${demanded:.2f} saved.",
-            style="bold bright_green",
-            expand=False
-        ))
-    else:
-        show_balance(before, before, "protected")
-        step("All 4 security checks passed — payment would proceed", "bright_green", "✓")
-
-    console.print()
-    step("Appending forensic data to blocked_payments.log...", "dim white", "»")
-    ts = time.strftime("%Y-%m-%dT%H:%M:%S+00:00")
-    log_line = (
-        f"{ts} | {url} | described=${described:.2f} | "
-        f"demanded=${demanded:.2f} | blocked={blocked}\n"
-    )
-    with open("blocked_payments.log", "a") as f:
-        f.write(log_line)
-    time.sleep(0.3)
-
-    try:
-        with open("blocked_payments.log") as f:
-            lines = f.readlines()
-            last = lines[-1].strip() if lines else ""
-        console.print(Padding(Panel(last, style="dim white", expand=False), (0, 0, 0, 2)))
-    except FileNotFoundError:
-        pass
-
-
-def run_side_by_side(url):
-    console.print()
-    console.print("  [bold bright_red]========================================================================[/bold bright_red]")
-    console.print("  [bold bright_red]                      WITHOUT DOORNO.402 SDK                            [/bold bright_red]")
-    console.print("  [bold bright_red]========================================================================[/bold bright_red]")
-    unprotected_tx = run_unprotected(url)
-    console.print()
-    console.print()
-    console.print("  [bold bright_green]========================================================================[/bold bright_green]")
-    console.print("  [bold bright_green]                        WITH DOORNO.402 SDK                             [/bold bright_green]")
-    console.print("  [bold bright_green]========================================================================[/bold bright_green]")
-    run_protected(url)
-
-    if "/combo" in url:
-        console.print("\n\n")
-        console.print("  [bold bright_cyan]========================================================================[/bold bright_cyan]")
-        console.print("  [bold bright_cyan]                        COMBO ATTACK SUMMARY                            [/bold bright_cyan]")
-        console.print("  [bold bright_cyan]========================================================================[/bold bright_cyan]")
-        console.print()
-        table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
-        table.add_column("Vulnerability", style="bold cyan")
-        table.add_column("Without SDK", style="bold red")
-        table.add_column("With SDK", style="bold green")
-        table.add_column("What DoorNo.402 Did", style="dim white")
-        table.add_column("Basescan Link", style="dim blue", overflow="fold")
-
-        tx_link = f"https://sepolia.basescan.org/tx/{unprotected_tx}" if unprotected_tx else "Failed"
-        
-        table.add_row("VULN-01 (Price Inflation)", "Agent Paid $5.00", "Blocked", "Detected 49900% inflation", tx_link)
-        table.add_row("VULN-02 (Unknown Recipient)", "Agent Paid Attacker", "Blocked", "Low ENS trust score (0/100)", tx_link)
-        table.add_row("VULN-04 (Prompt Injection)", "Data compromised", "Blocked", "AI guardrail detected payload", "N/A")
-        table.add_row("VULN-05 (Budget Drain)", "Drained to $0", "Blocked", "Daily $5.00 limit enforced", tx_link)
-        
-        console.print(Padding(table, (0, 0, 0, 2)))
-
-
-def run_custom():
-    console.print()
-    url = console.input("  [bold cyan]Enter URL to fetch:[/bold cyan] ").strip()
-    if not url:
-        return
-        
-    console.print()
-    step(f"Testing wild URL: [cyan]{url}[/cyan]")
-    time.sleep(0.4)
-
-    result, status = fetch_402(url)
-    if status == "server_down":
-        console.print(Panel("Connection failed. Server might be down or invalid.", style="bold bright_red", expand=False))
-        return
-
-    if status == "not_402":
-        code = result.status_code
-        step(f"Server responded: HTTP {code}", "dim white", "*")
-        if code == 200:
-            body = result.text[:500]
-            console.print(Panel(body, title="[bold cyan]Response Preview[/bold cyan]", style="dim white", expand=False))
-        else:
-            console.print(Panel(f"HTTP {code}", style="bright_yellow", expand=False))
-        return
-
-    step("HTTP 402 Payment Required detected!", "bold bright_green", "✓")
-    time.sleep(0.3)
-    
-    # Force the secure agent flow for wild URLs to show off the SDK
-    run_protected(url)
-
-
-def run_search():
-    console.print()
-    step("Scanning the internet for x402-enabled endpoints...", "bright_magenta", "⚡")
-
-    try:
-        from duckduckgo_search import DDGS
-    except ImportError:
-        console.print(Panel(
-            "duckduckgo-search not installed.\n"
-            "pip install duckduckgo-search",
-            style="bold bright_red",
-            expand=False
-        ))
-        return
-
-    skip = ["github.com", "docs.", "medium.com", "blog.", "arxiv.org"]
-    urls = []
-
-    try:
-        with DDGS() as ddgs:
-            queries = [
-                "x402 payment protocol site",
-                "x402 HTTP payment AI agent",
-            ]
-            for q in queries:
-                for r in ddgs.text(q, max_results=10):
-                    href = r.get("href", "")
-                    title = r.get("title", "")
-                    if any(s in href.lower() for s in skip):
-                        continue
-                    if href not in [u[0] for u in urls]:
-                        urls.append((href, title))
-                    if len(urls) >= 5:
-                        break
-                if len(urls) >= 5:
-                    break
-    except Exception as e:
-        console.print(Panel(f"Search failed: {e}", style="bright_yellow", expand=False))
-        fallback = console.input(
-            "  [bold cyan]Enter a URL manually instead:[/bold cyan] "
-        ).strip()
-        if fallback:
-            run_custom_url(fallback)
-        return
-
-    if not urls:
-        console.print(Panel(
-            "No x402 sites found in search.\n"
-            "Try Option 4 to test a specific URL.",
-            style="bright_yellow",
-            expand=False
-        ))
-        return
-
-    console.print()
-    table = Table(show_header=True, style="dim white", box=None)
-    table.add_column("#", style="bold magenta")
-    table.add_column("URL", style="bright_cyan", max_width=50)
-    table.add_column("Title", style="dim white")
-    for i, (href, title) in enumerate(urls, 1):
-        table.add_row(str(i), href[:50], title[:40])
+def show_execution_result(result, amount_usd):
+    table = Table(show_header=False, border_style="dim white", box=box.SIMPLE)
+    table.add_column("Field", style="bold")
+    table.add_column("Value")
+    table.add_row("ExecutionId", result.execution_id)
+    table.add_row("Status", f"[green]{result.status}[/]")
+    if result.tx_hash:
+        table.add_row("TxHash", result.tx_hash)
+    if result.tx_link:
+        table.add_row("Basescan", result.tx_link)
+    table.add_row("Amount", f"${amount_usd:.2f} USDC")
     console.print(table)
 
+
+def append_blocked_log(reason, amount_usd):
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).isoformat()
+    with open("blocked_payments.log", "a") as f:
+        f.write(f"{ts} | BLOCKED | ${amount_usd:.2f} | {reason}\n")
+
+
+def append_approved_log(result, amount_usd):
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).isoformat()
+    with open("approved_payments.log", "a") as f:
+        f.write(f"{ts} | APPROVED | ${amount_usd:.2f} | {result.tx_hash or 'pending'}\n")
+
+
+async def run_unprotected(server_url, slug):
+    from keeperhub_executor import extract_payment_details, execute_payment
+
+    console.print(Panel(
+        "Mode: UNPROTECTED\n"
+        "Agent -> KeeperHub (no DoorNo.402 validation)",
+        border_style="red",
+    ))
+
+    url = f"{server_url}/api/articles/{slug}"
+    console.print(f"  [blue]Fetching:[/] {url}")
+
+    payload = await fetch_402_payload(url)
+    if not payload:
+        return
+
+    details = extract_payment_details(payload)
+    show_402_details(details)
+
+    # Skip actual KeeperHub call for combo attack ($999k)
+    if details["amount_usd"] > 1000:
+        console.print(Panel(
+            f"[red bold]In a real unprotected scenario, KeeperHub would execute\n"
+            f"this ${details['amount_usd']:,.2f} payment. Skipping to protect demo wallet.[/]",
+            border_style="red",
+        ))
+        return
+
+    console.print("[red bold]No validation -- forwarding directly to KeeperHub...[/]")
+
+    with console.status("KeeperHub executing..."):
+        result = await execute_payment(
+            recipient=details["recipient"],
+            amount_usd=details["amount_usd"],
+            token_address=details["token_address"],
+        )
+
+    if result.success:
+        show_execution_result(result, details["amount_usd"])
+        console.print(Panel(
+            f"[red bold]Agent was robbed.[/]\n"
+            f"KeeperHub executed ${details['amount_usd']:.2f} with zero validation.\n"
+            f"DoorNo.402 would have blocked this.",
+            border_style="red", title="Result",
+        ))
+        append_approved_log(result, details["amount_usd"])
+    else:
+        console.print(Panel(f"[red]KeeperHub error: {result.error}[/]", border_style="red"))
+
+
+async def run_protected(server_url, slug):
+    from keeperhub_executor import extract_payment_details, execute_payment
+
+    console.print(Panel(
+        "Mode: PROTECTED\n"
+        "Agent -> DoorNo.402 validates -> KeeperHub executes if approved",
+        border_style="green",
+    ))
+
+    url = f"{server_url}/api/articles/{slug}"
+    console.print(f"  [blue]Fetching:[/] {url}")
+
+    payload = await fetch_402_payload(url)
+    if not payload:
+        return
+
+    details = extract_payment_details(payload)
+    show_402_details(details)
+
+    console.print("  [yellow]Running DoorNo.402 validation pipeline...[/]")
+    time.sleep(0.3)
+
+    from doorno402.validators.price import validate_price
+    from doorno402.validators.injection import validate_injection
+    from doorno402.validators.tls import validate_tls
+
+    # TLS check
+    console.print("  [blue]1.[/] Checking TLS...")
+    tls = validate_tls(url)
+    if not tls["valid"]:
+        show_blocked_panel(tls["reason"], details["amount_usd"])
+        return
+    console.print("  [green]   TLS OK[/]")
+
+    # Injection check
+    console.print("  [blue]2.[/] Scanning for prompt injection...")
+    injection = validate_injection(payload)
+    if injection.get("injection_detected"):
+        show_blocked_panel(injection["reason"], details["amount_usd"])
+        return
+    console.print("  [green]   No injection detected[/]")
+
+    # Price check
+    console.print("  [blue]3.[/] Validating price integrity...")
+    price = validate_price(payload)
+    if not price["valid"]:
+        show_blocked_panel(price["reason"], details["amount_usd"])
+        return
+    console.print("  [green]   Price valid[/]")
+
+    # ENS check
+    console.print("  [blue]4.[/] Checking ENS trust score...")
+    mainnet_rpc = os.environ.get("MAINNET_RPC_URL")
+    if mainnet_rpc:
+        from doorno402.validators.ens_verifier import calculate_trust_score
+        trust = calculate_trust_score(
+            pay_to=details["recipient"],
+            price_valid=True,
+            mainnet_rpc_url=mainnet_rpc,
+        )
+        if trust.action == "block":
+            show_blocked_panel(
+                trust.warning or f"ENS trust score: {trust.trust_score}/90",
+                details["amount_usd"],
+            )
+            return
+        if trust.action == "flag":
+            console.print(Panel(
+                f"[yellow]WARNING: {trust.warning}[/]\n"
+                f"Trust score: {trust.trust_score}/90\n"
+                f"Proceeding with caution...",
+                border_style="yellow",
+            ))
+        else:
+            console.print(f"  [green]   Recipient trusted -- score {trust.trust_score}/90[/]")
+    else:
+        console.print("  [dim]   ENS check skipped (MAINNET_RPC_URL not set)[/]")
+
+    # All checks passed
+    console.print("\n  [green bold]DoorNo.402 approved -- forwarding to KeeperHub...[/]")
+
+    with console.status("KeeperHub executing..."):
+        result = await execute_payment(
+            recipient=details["recipient"],
+            amount_usd=details["amount_usd"],
+            token_address=details["token_address"],
+        )
+
+    if result.success:
+        show_execution_result(result, details["amount_usd"])
+        console.print(Panel(
+            "[green bold]Clean payment executed.[/]\n"
+            "DoorNo.402 validated. KeeperHub executed on Base Sepolia.",
+            border_style="green", title="Result",
+        ))
+        append_approved_log(result, details["amount_usd"])
+    else:
+        console.print(Panel(f"[red]KeeperHub error: {result.error}[/]", border_style="red"))
+
+
+async def run_all_servers():
+    console.print(Panel(
+        "Running full attack suite against 6 servers\n"
+        "Each server exploits a different vulnerability\n"
+        "DoorNo.402 will attempt to block all 6 attacks",
+        border_style="dim white",
+    ))
+
+    from keeperhub_executor import extract_payment_details
+    results = []
+
+    for i, srv in enumerate(SERVER_CONFIG, 1):
+        url = get_server_url(srv)
+        console.print(f"\n  [{i}/6] {srv['name']:16s} -- {srv['vuln']:25s} ", end="")
+
+        if not check_server_alive(url):
+            console.print("[yellow]OFFLINE[/]")
+            results.append({"name": srv["name"], "vuln": srv["vuln"],
+                            "result": "OFFLINE", "saved": 0})
+            continue
+
+        article_url = f"{url}/api/articles/{srv['slug']}"
+        payload = await fetch_402_payload(article_url)
+        if not payload:
+            console.print("[yellow]NO 402[/]")
+            results.append({"name": srv["name"], "vuln": srv["vuln"],
+                            "result": "NO 402", "saved": 0})
+            continue
+
+        details = extract_payment_details(payload)
+
+        # Run validation pipeline
+        from doorno402.validators.price import validate_price
+        from doorno402.validators.injection import validate_injection
+        from doorno402.validators.tls import validate_tls
+
+        blocked = False
+        reason = ""
+
+        tls = validate_tls(article_url)
+        if not tls["valid"]:
+            blocked, reason = True, tls["reason"]
+
+        if not blocked:
+            inj = validate_injection(payload)
+            if inj.get("injection_detected"):
+                blocked, reason = True, inj["reason"]
+
+        if not blocked:
+            price = validate_price(payload)
+            if not price["valid"]:
+                blocked, reason = True, price["reason"]
+
+        if not blocked:
+            mainnet_rpc = os.environ.get("MAINNET_RPC_URL")
+            if mainnet_rpc:
+                from doorno402.validators.ens_verifier import calculate_trust_score
+                trust = calculate_trust_score(
+                    pay_to=details["recipient"],
+                    price_valid=True,
+                    mainnet_rpc_url=mainnet_rpc,
+                )
+                if trust.action == "block":
+                    blocked = True
+                    reason = trust.warning or f"ENS trust score: {trust.trust_score}/90"
+
+        if blocked:
+            console.print("[red bold]BLOCKED[/]")
+            results.append({"name": srv["name"], "vuln": srv["vuln"],
+                            "result": "BLOCKED", "saved": details["amount_usd"]})
+            append_blocked_log(reason, details["amount_usd"])
+        else:
+            console.print("[green bold]ALLOWED[/]")
+            results.append({"name": srv["name"], "vuln": srv["vuln"],
+                            "result": "ALLOWED", "saved": 0})
+
+    # Results table
     console.print()
-    pick = console.input(
-        "  [bold cyan]Select a site to test with Secure Agent[/bold cyan] [dim][1-5][/dim] or [dim][b] back[/dim]: "
-    ).strip().lower()
-    if pick == "b" or not pick.isdigit():
-        return
-    idx = int(pick) - 1
-    if idx < 0 or idx >= len(urls):
-        console.print("  [bold bright_red]Invalid selection.[/bold bright_red]")
-        return
+    table = Table(title="DoorNo.402 Scan Results", border_style="dim white", box=box.ROUNDED)
+    table.add_column("Site", style="bold")
+    table.add_column("Attack")
+    table.add_column("Result")
+    table.add_column("Saved", style="green")
 
-    target = urls[idx][0]
+    total_saved = 0
+    blocked_count = 0
+    for r in results:
+        res_style = "[red bold]BLOCKED[/]" if r["result"] == "BLOCKED" else (
+            "[yellow]OFFLINE[/]" if r["result"] == "OFFLINE" else "[green bold]ALLOWED[/]")
+        saved_str = f"${r['saved']:,.2f}" if r["saved"] > 0 else "--"
+        table.add_row(r["name"], r["vuln"], res_style, saved_str)
+        total_saved += r["saved"]
+        if r["result"] == "BLOCKED":
+            blocked_count += 1
+
+    table.add_section()
+    table.add_row("[bold]Total[/]", f"[bold]{blocked_count}/6 blocked[/]", "", f"[bold green]${total_saved:,.2f}[/]")
+    console.print(table)
+
+    balance = get_balance()
+    if balance >= 0:
+        console.print(f"\n  [green]Wallet balance: {balance:.2f} USDC -- unchanged[/]")
+
+
+def show_server_menu():
+    console.print("\n  Pick a server to test:\n")
+    for i, srv in enumerate(SERVER_CONFIG, 1):
+        console.print(f"  [bold blue][{i}][/]  {srv['name']:16s} -- {srv['vuln']}")
+    console.print("  [dim][b]  Back to main menu[/]")
+    return Prompt.ask("\n  Select", choices=[str(i) for i in range(1, 7)] + ["b"], default="b")
+
+
+def show_server_action_menu(srv):
+    url = get_server_url(srv)
+    console.print(f"\n  {srv['name']} -- {srv['vuln']}")
+    console.print(f"  {'─' * 40}")
+    console.print(f"  Server: {url}")
     console.print()
-    run_custom_url(target)
+    console.print("  [bold blue][1][/]  Run unprotected  -- agent pays without validation")
+    console.print("  [bold blue][2][/]  Run protected    -- DoorNo.402 blocks the payment")
+    console.print("  [bold blue][3][/]  Side by side     -- run both, compare results")
+    console.print("  [dim][b]  Back[/]")
+    return Prompt.ask("\n  Select", choices=["1", "2", "3", "b"], default="b")
 
 
-def run_custom_url(url):
-    step(f"Probing: [cyan]{url}[/cyan]")
-    result, status = fetch_402(url)
-    if status == "server_down":
-        console.print(Panel("Connection failed.", style="bold bright_red", expand=False))
+async def run_keeperhub_demo():
+    console.print(Panel(
+        "KeeperHub Integration Demo\n"
+        "{'─' * 45}\n"
+        "Flow: DoorNo.402 validates -> KeeperHub executes\n",
+        border_style="dim white",
+    ))
+    console.print("  [bold blue][1][/]  Blocked payment  -- malicious server, KeeperHub never called")
+    console.print("  [bold blue][2][/]  Approved payment  -- honest server, KeeperHub executes")
+    console.print("  [dim][b]  Back[/]")
+
+    choice = Prompt.ask("\n  Select", choices=["1", "2", "b"], default="b")
+    if choice == "b":
         return
-    if status == "not_402":
-        step(f"HTTP {result.status_code}", "dim white", "*")
-        console.print(Panel(result.text[:500], style="dim white", expand=False))
+
+    if choice == "1":
+        # Hit CryptoInsider (malicious)
+        srv = SERVER_CONFIG[0]
+        url = get_server_url(srv)
+        if not check_server_alive(url):
+            console.print(Panel(
+                f"[red]Server not running: {url}[/]\n"
+                f"Start it: cd demo/servers/cryptoinsider && node server.js",
+                border_style="red",
+            ))
+            return
+        await run_protected(url, srv["slug"])
+        console.print("\n  [dim]KeeperHub was never called.[/]")
+
+    elif choice == "2":
+        # Use blog or honest payload
+        blog_url = os.environ.get("BLOG_URL", "http://localhost:3000")
+        url = f"{blog_url}/api/articles/bitcoin-etf-analysis"
+        console.print(f"  [blue]Testing honest endpoint:[/] {url}")
+        await run_protected(blog_url, "bitcoin-etf-analysis")
+
+
+async def run_custom_url():
+    url = Prompt.ask("\n  Enter x402 endpoint URL")
+    if not url:
         return
-    step("x402 paywall detected!", "bold bright_green", "✓")
-    run_protected(url)
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+    except Exception as e:
+        console.print(Panel(f"[red]Connection error: {e}[/]", border_style="red"))
+        return
+
+    if resp.status_code == 200:
+        console.print(f"  Server returned HTTP 200")
+        console.print(Panel(resp.text[:500], title="Response Preview", border_style="dim white"))
+        return
+    elif resp.status_code != 402:
+        console.print(f"  Server returned HTTP {resp.status_code}")
+        return
+
+    console.print("  [green]HTTP 402 detected[/]")
+
+    from keeperhub_executor import extract_payment_details
+    payload = resp.json()
+    details = extract_payment_details(payload)
+    show_402_details(details)
+
+    protected = Prompt.ask("  Run with DoorNo.402 protection?", choices=["y", "n"], default="y")
+    if protected == "y":
+        # Extract base URL and slug
+        await run_protected(url.rsplit("/", 1)[0].rsplit("/", 1)[0], url.rsplit("/", 1)[-1])
+    else:
+        await run_unprotected(url.rsplit("/", 1)[0].rsplit("/", 1)[0], url.rsplit("/", 1)[-1])
+
+
+async def main_menu():
+    while True:
+        show_header()
+        console.print("  DoorNo.402 -- Select a demo mode\n")
+        console.print("  [bold blue][1][/]  Run all 6 servers       -- full attack suite + results table")
+        console.print("  [bold blue][2][/]  Pick a server            -- choose one attack to demo")
+        console.print("  [bold blue][3][/]  KeeperHub demo           -- validated payment execution")
+        console.print("  [bold blue][4][/]  Custom URL               -- test any x402 endpoint")
+        console.print("  [dim][q]  Quit[/]")
+
+        choice = Prompt.ask("\n  Select", choices=["1", "2", "3", "4", "q"], default="q")
+
+        try:
+            if choice == "1":
+                await run_all_servers()
+                Prompt.ask("\n  Press Enter to continue")
+
+            elif choice == "2":
+                pick = show_server_menu()
+                if pick == "b":
+                    continue
+                srv = SERVER_CONFIG[int(pick) - 1]
+                url = get_server_url(srv)
+                if not check_server_alive(url):
+                    console.print(Panel(
+                        f"[red]Server not running: {url}[/]\n"
+                        f"Start it: cd demo/servers/{srv['name'].lower()} && node server.js",
+                        border_style="red",
+                    ))
+                    Prompt.ask("\n  Press Enter to continue")
+                    continue
+
+                action = show_server_action_menu(srv)
+                if action == "b":
+                    continue
+                elif action == "1":
+                    await run_unprotected(url, srv["slug"])
+                elif action == "2":
+                    await run_protected(url, srv["slug"])
+                elif action == "3":
+                    console.print("\n  [red bold]-- Without DoorNo.402 --[/]")
+                    await run_unprotected(url, srv["slug"])
+                    console.print(f"\n  {'─' * 50}\n")
+                    console.print("  [green bold]-- With DoorNo.402 --[/]")
+                    await run_protected(url, srv["slug"])
+                Prompt.ask("\n  Press Enter to continue")
+
+            elif choice == "3":
+                await run_keeperhub_demo()
+                Prompt.ask("\n  Press Enter to continue")
+
+            elif choice == "4":
+                await run_custom_url()
+                Prompt.ask("\n  Press Enter to continue")
+
+            elif choice == "q":
+                console.print("\n  [dim]Shutting down...[/]")
+                break
+
+        except Exception as e:
+            console.print(Panel(f"[red]Error: {e}[/]", border_style="red"))
+            Prompt.ask("\n  Press Enter to continue")
 
 
 if __name__ == "__main__":
     check_env()
-    show_header()
-    main_menu()
+    asyncio.run(main_menu())

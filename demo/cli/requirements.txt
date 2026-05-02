@@ -1,8 +1,6 @@
-rich
-duckduckgo-search
-httpx
-web3
-eth-account
-python-dotenv
+rich>=13.0.0
+web3>=6.0.0
+eth-account>=0.9.0
+python-dotenv>=1.0.0
+httpx>=0.24.0
 x402
-pyfiglet
