@@ -118,6 +118,74 @@
         .delay-2 { transition-delay: 0.2s; }
         .delay-3 { transition-delay: 0.3s; }
 
+        /* Hero Section */
+        #hero {
+            position: relative;
+            min-height: 100vh;
+            padding-top: 160px; /* offset for nav */
+            background: linear-gradient(180deg, #dbeafe 0%, var(--bg-page) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
+            padding-bottom: 200px;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px; margin: 0 auto;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(37, 99, 235, 0.1); color: var(--accent-blue);
+            padding: 8px 16px; border-radius: 100px; font-weight: 600; font-size: 14px;
+            margin-bottom: 32px; border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
+        .hero-headline { margin-bottom: 24px; }
+        .hero-headline .highlight { color: var(--accent-blue); font-style: italic; }
+        
+        .hero-subheadline { font-size: 20px; max-width: 560px; margin: 0 auto 40px; }
+
+        .hero-actions { display: flex; gap: 16px; margin-bottom: 48px; justify-content: center; }
+
+        .hero-stats { display: flex; gap: 24px; margin-bottom: 64px; justify-content: center; flex-wrap: wrap; }
+        .stat-pill {
+            background: var(--bg-card); padding: 12px 24px; border-radius: 100px;
+            box-shadow: var(--shadow-card); font-weight: 600; font-size: 14px;
+            display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color);
+        }
+        .stat-pill span { color: var(--accent-blue); font-size: 18px; font-weight: 700; }
+
+        /* Floating Terminal */
+        .hero-terminal-wrapper { perspective: 1000px; position: relative; }
+        .hero-terminal-label {
+            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+            font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: 1px; text-transform: uppercase;
+        }
+        .hero-terminal {
+            background: var(--bg-code);
+            border-radius: 16px; overflow: hidden;
+            box-shadow: var(--shadow-floating);
+            text-align: left; max-width: 700px; margin: 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
+        }
+        .terminal-header { display: flex; gap: 8px; padding: 16px; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-r { background: #ff5f56; } .dot-y { background: #ffbd2e; } .dot-g { background: #27c93f; }
+        
+        .terminal-body { padding: 32px; font-family: var(--font-code); font-size: 14px; line-height: 1.8; color: var(--text-code); }
+        .c-sys { color: #94a3b8; }
+        .c-cmd { color: #00f2fe; font-weight: 700; }
+        .c-warn { color: #fcd34d; font-weight: 700; }
+        .c-err { color: #f87171; }
+        .c-ok { color: #4ade80; }
+
         @media (max-width: 768px) {
             h1 { font-size: 40px; }
             h2 { font-size: 32px; }
@@ -125,6 +193,8 @@
             .nav-center { display: none; /* simple collapse for mobile */ }
             .nav-right .nav-link { display: none; }
             .hamburger { display: flex; }
+            .hero-actions { flex-direction: column; }
+            #hero { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
         }
     </style>
 </head>
@@ -160,6 +230,54 @@
 
     <!-- 1. Hero Section -->
     <section id="hero">
+        <div class="container hero-content animate-on-scroll">
+            <div class="hero-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Security Middleware for x402 Payments
+            </div>
+            
+            <h1 class="hero-headline">The <span class="highlight">Security Layer</span><br>Your Agent Needs</h1>
+            
+            <p class="hero-subheadline">x402 lets servers charge AI agents for resources over HTTP. DoorNo.402 makes sure those charges are legitimate before a single transaction is signed.</p>
+            
+            <div class="hero-actions">
+                <a href="#install" class="btn btn-primary">
+                    Install Now
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+                <a href="https://github.com" class="btn btn-secondary">View on GitHub</a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-pill"><span>7</span> Vulnerabilities Covered</div>
+                <div class="stat-pill"><span>2</span> Languages Supported</div>
+                <div class="stat-pill"><span>1</span> Line to Protect</div>
+            </div>
+
+            <div class="hero-terminal-wrapper delay-2 animate-on-scroll">
+                <div class="hero-terminal-label">Live demo output</div>
+                <div class="hero-terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dot dot-r"></div>
+                        <div class="terminal-dot dot-y"></div>
+                        <div class="terminal-dot dot-g"></div>
+                    </div>
+                    <div class="terminal-body" id="hero-term-body">
+                        <div><span class="c-cmd">$ python demo/agent/agent.py</span></div>
+                        <div class="c-sys"><br>[agent] fetching: https://cryptoinsider.xyz/article/btc-etf<br>[agent] 402 received<br><br></div>
+                        <div class="c-err">[DoorNo.402] BLOCKED ──────────────────────────────<br>
+                        description : $0.01<br>
+                        demanded    : $5.00<br>
+                        inflation   : 49,900%<br>
+                        threshold   : 5%<br>
+                        ────────────────────────────────────────────────────<br><br></div>
+                        <div class="c-ok">[agent] wallet balance: 15.00 USDC — unchanged</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- 2. The Problem Section -->
