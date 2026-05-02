@@ -186,15 +186,60 @@
         .c-err { color: #f87171; }
         .c-ok { color: #4ade80; }
 
+        /* Section Headers */
+        .section-header { text-align: center; margin-bottom: 64px; }
+        .section-label { font-size: 14px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+        .section-subtext { font-size: 20px; max-width: 600px; margin: 24px auto 0; }
+
+        /* Problem Section */
+        #problem { background: #ffffff; clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%); padding-bottom: 160px; margin-top: -100px; padding-top: 200px; position: relative; z-index: 10; }
+        
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 64px; }
+        .problem-card { border-radius: var(--border-radius, 16px); padding: 40px; box-shadow: var(--shadow-card); }
+        .problem-card-dark { background: var(--bg-code); color: var(--text-code); }
+        .problem-card-dark h3 { color: #fff; margin-bottom: 24px; font-size: 20px; }
+        .problem-card-dark pre { margin: 0; }
+        
+        .problem-card-red { background: #fef2f2; border: 1px solid #fca5a5; }
+        .problem-card-red h3 { color: var(--danger-red); margin-bottom: 24px; font-size: 20px; }
+        .attack-timeline { list-style: none; padding-left: 16px; border-left: 2px solid #fca5a5; }
+        .attack-timeline li { position: relative; margin-bottom: 24px; padding-left: 16px; font-size: 15px; color: #7f1d1d; }
+        .attack-timeline li::before { content: ''; position: absolute; left: -21px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--danger-red); }
+        .attack-timeline li:last-child { margin-bottom: 0; font-weight: 700; }
+        .attack-details { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; font-family: var(--font-code); font-size: 13px; color: #991b1b; }
+
+        .flow-diagram { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 40px; }
+        .flow-node { padding: 12px 24px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 100px; font-weight: 600; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .flow-node.danger { background: var(--danger-red); color: #fff; border: none; }
+        .flow-arrow { color: var(--text-secondary); }
+
+        /* Solution Section */
+        #solution { background: #f8fafc; padding-top: 160px; margin-top: -100px; position: relative; z-index: 5; }
+        .solution-code-container { max-width: 800px; margin: 0 auto 64px; background: var(--bg-code); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-card); }
+        .solution-code-header { padding: 12px 24px; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); font-family: var(--font-code); font-size: 12px; color: var(--text-secondary); }
+        .solution-code-body { padding: 32px; font-family: var(--font-code); font-size: 14px; color: var(--text-code); line-height: 1.7; overflow-x: auto; }
+        
+        .solution-diagram { display: flex; flex-direction: column; align-items: center; gap: 32px; }
+        .diagram-row { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+        .solution-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; box-shadow: var(--shadow-card); width: 220px; text-align: center; }
+        .solution-card h4 { margin-bottom: 16px; font-size: 16px; color: var(--text-primary); }
+        .solution-list { list-style: none; text-align: left; font-size: 13px; color: var(--text-secondary); }
+        .solution-list li { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .solution-list li::before { content: '✓'; color: var(--accent-green); font-weight: bold; }
+
         @media (max-width: 768px) {
             h1 { font-size: 40px; }
             h2 { font-size: 32px; }
             section { padding: 80px 0; }
-            .nav-center { display: none; /* simple collapse for mobile */ }
+            .nav-center { display: none; }
             .nav-right .nav-link { display: none; }
             .hamburger { display: flex; }
             .hero-actions { flex-direction: column; }
             #hero { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
+            #problem { clip-path: polygon(0 0, 100% 0, 100% 98%, 0 100%); }
+            .two-column { grid-template-columns: 1fr; }
+            .diagram-row { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); }
         }
     </style>
 </head>
@@ -282,10 +327,112 @@
 
     <!-- 2. The Problem Section -->
     <section id="problem">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">The Problem</div>
+                <h2>x402 trusts every server.</h2>
+                <p class="section-subtext">Any website can return a fake 402 response. Your agent reads the description, sees $0.01, and pays whatever the protocol demands — no validation, no warning.</p>
+            </div>
+
+            <div class="two-column">
+                <div class="problem-card problem-card-dark animate-on-scroll delay-1">
+                    <h3>Without DoorNo.402</h3>
+                    <pre><code class="language-python">async with x402HttpxClient(account=account) as client:
+    # Agent blindly pays whatever server demands
+    resp = await client.get("https://malicious-site.com")
+    
+    # No validation. No warning. 
+    # Wallet drained.</code></pre>
+                </div>
+                
+                <div class="problem-card problem-card-red animate-on-scroll delay-2">
+                    <h3>What actually happened</h3>
+                    <ul class="attack-timeline">
+                        <li>Agent requests article</li>
+                        <li>Server returns 402
+                            <div class="attack-details">
+                                <span>↳ description: "only $0.01"</span>
+                                <span>↳ maxAmountRequired: $5.00  ← the lie</span>
+                            </div>
+                        </li>
+                        <li>Agent pays $5.00</li>
+                        <li>Wallet drained silently</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="flow-diagram animate-on-scroll delay-3">
+                <div class="flow-node">Agent</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Malicious 402</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Pays $5.00</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node danger">Robbed</div>
+            </div>
+        </div>
     </section>
 
     <!-- 3. The Solution Section -->
     <section id="solution">
+        <div class="container">
+            <div class="section-header animate-on-scroll">
+                <div class="section-label">The Solution</div>
+                <h2>One import. Full protection.</h2>
+                <p class="section-subtext">Wrap your existing x402 client with protect() and every payment request is validated before it executes.</p>
+            </div>
+
+            <div class="solution-code-container animate-on-scroll delay-1">
+                <div class="solution-code-header">agent.py</div>
+                <div class="solution-code-body">
+<pre><code class="language-python">from doorno402 import protect, PaymentBlockedError
+from x402.clients.httpx import x402HttpxClient
+from eth_account import Account
+
+account = Account.from_key(private_key)
+
+# One line change
+client = protect(x402HttpxClient(account=account))
+
+try:
+    resp = await client.get("https://any-x402-site.com/data")
+except PaymentBlockedError as e:
+    print(e.result)  # full attack report</code></pre>
+                </div>
+            </div>
+
+            <div class="solution-diagram animate-on-scroll delay-2">
+                <div class="diagram-row">
+                    <div class="flow-node">Agent</div>
+                    <div class="flow-arrow">→</div>
+                    
+                    <div class="solution-card">
+                        <h4>DoorNo.402 validates</h4>
+                        <ul class="solution-list">
+                            <li>Price check</li>
+                            <li>ENS trust score</li>
+                            <li>Injection scan</li>
+                            <li>Budget limit</li>
+                            <li>TLS check</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flow-arrow">→</div>
+                    
+                    <div class="solution-card" style="background: #f8fafc;">
+                        <h4>KeeperHub executes</h4>
+                        <ul class="solution-list">
+                            <li>Guaranteed execution</li>
+                            <li>Gas optimization</li>
+                            <li>Audit trail</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node" style="border-color: var(--accent-blue); color: var(--accent-blue);">Blockchain</div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- 4. Vulnerabilities Section -->
