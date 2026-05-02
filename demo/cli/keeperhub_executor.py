@@ -70,10 +70,11 @@ async def execute_payment(
 
             # Poll for completion
             status_data = await get_execution_status(execution_id, api_key)
+            final_status = status_data.get("status", status)
             return ExecutionResult(
-                success=True,
+                success=(final_status == "completed"),
                 execution_id=execution_id,
-                status=status_data.get("status", status),
+                status=final_status,
                 tx_hash=status_data.get("transactionHash"),
                 tx_link=status_data.get("transactionLink"),
                 error=status_data.get("error"),
