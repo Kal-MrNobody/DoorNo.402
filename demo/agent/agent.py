@@ -73,5 +73,5 @@ async def run_agent_task(target_url: str):
 if __name__ == "__main__":
     # Test against the malicious Price Inflation server
     # Note: Make sure the server is running (cd demo/servers/cryptoinsider && node server.js)
-    test_url = "http://localhost:3001/api/articles/bitcoin-etf-analysis"
+    test_url = "http://localhost:3001/api/articles/bitcoin-etf-flows"
     asyncio.run(run_agent_task(test_url))
