@@ -1,19 +1,21 @@
 # DoorNo.402
 
-DoorNo.402 is a security middleware for x402 payment requests. It sits between your agent and the payment, validates the request against known attack patterns, and blocks anything suspicious.
+[![PyPI](https://img.shields.io/pypi/v/doorno402)](https://pypi.org/project/doorno402/)
+[![npm](https://img.shields.io/npm/v/doorno402)](https://npmjs.com/package/doorno402)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+DoorNo.402 is security middleware for x402 payment requests. It intercepts every 402 response before your agent pays, validates it against known attack patterns, and blocks anything suspicious before a single transaction is signed.
 
 ## The problem
 
-The x402 specification enables autonomous payments but lacks a native trust model. When an agent requests a resource, any server can return an HTTP 402 demanding payment. Because the server controls both the description and the required amount, it can lie about the price, inject malicious prompts into the description, or redirect funds to an unknown wallet. Without a security layer, your agent will blindly sign and execute whatever the server demands.
+x402 lets servers charge AI agents for resources over HTTP. The spec has no trust model. Any server can lie about the price, inject instructions into the description field to hijack the agent's LLM, redirect payment to an unknown wallet, or drain the wallet through rapid micro-payments. Without a security layer, your agent pays whatever it is told.
 
 ## Install
 
-For Python:
 ```bash
 pip install doorno402
 ```
 
-For TypeScript:
 ```bash
 npm install doorno402
 ```
@@ -28,26 +30,19 @@ from eth_account import Account
 account = Account.from_key(private_key)
 client = protect(x402HttpxClient(account=account))
 
-try:
-    resp = await client.get("https://api.example.com/data")
-except PaymentBlockedError as e:
-    print("Payment blocked:", e.result)
+resp = await client.get("https://api.example.com/data")
+# raises PaymentBlockedError if the 402 payload is malicious
 ```
 
 ## Quickstart — TypeScript
 
 ```typescript
-import { protect, PaymentBlockedError } from "doorno402"
+import { protect, PaymentBlockedError } from "doorno402";
 
-const safeFetch = protect(fetch)
+const safeFetch = protect(fetch);
 
-try {
-    const resp = await safeFetch("https://api.example.com/data")
-} catch (e) {
-    if (e instanceof PaymentBlockedError) {
-        console.log("Payment blocked:", e.result)
-    }
-}
+const resp = await safeFetch("https://api.example.com/data");
+// throws PaymentBlockedError if the 402 payload is malicious
 ```
 
 ## What it catches
@@ -64,57 +59,66 @@ try {
 
 ## Configuration
 
-When calling `protect()`, you can supply the following configuration parameters to customize the security thresholds:
+`protect()` accepts three optional parameters:
 
-* `daily_budget`: (float) The maximum cumulative USD amount the agent is allowed to spend in a 24-hour window. Defaults to 0.50.
-* `mainnet_rpc_url`: (str) The RPC URL used for resolving ENS names and calculating recipient trust scores.
-* `raise_on_block`: (bool) If true, the middleware throws an exception/error when a payment is blocked. If false, it returns a mutated 403 Forbidden HTTP response.
+- `daily_budget` (float) — max USD per day, blocks when exceeded
+- `mainnet_rpc_url` (str) — Ethereum RPC for ENS trust lookups
+- `raise_on_block` (bool) — raise `PaymentBlockedError` vs return 403
 
 ## How it works
 
-DoorNo.402 acts as a transparent proxy around your HTTP client. When your agent makes a request that results in a 402 Payment Required response, the middleware intercepts the response before your agent sees it. It parses the payment payload and runs it through a strict 7-stage validation pipeline. If all checks pass, the response is forwarded to the agent for execution. If any check fails, the pipeline halts immediately and raises an error, ensuring no transaction is ever signed.
+DoorNo.402 registers an event hook on your HTTP client. When a server returns a 402 Payment Required response, the hook fires before the payment SDK processes it. The intercepted payload is run through a 7-stage validation pipeline: price inflation check, ENS trust scoring, redirect detection, prompt injection scan, budget enforcement, TLS verification, and delivery validation. If all stages pass, the response is forwarded to the payment SDK for execution. If any stage fails, the response status is mutated to 403 Forbidden and the payment is never signed. When `raise_on_block` is enabled, a `PaymentBlockedError` is raised instead.
 
 ## KeeperHub integration
 
-DoorNo.402 provides native integration for KeeperHub's MCP client. Since KeeperHub handles the execution, DoorNo.402 sits directly in front of the execution tool to validate the workflow payload before it reaches the KeeperHub infrastructure.
+DoorNo.402 validates. KeeperHub executes. Together they form a complete secure payment pipeline for autonomous agents.
 
 ```typescript
-import { interceptAndForward } from "doorno402/mcp"
-import { keeperHubClient } from "./agent"
+import { interceptAndForward } from "doorno402/mcp";
 
-const safeClient = interceptAndForward(keeperHubClient)
-await agent.run(safeClient)
+const safeClient = interceptAndForward(keeperHubClient, {
+  dailyBudget: 5.0,
+});
+await agent.run(safeClient);
 ```
 
-## Running the demo
+When DoorNo.402 approves a payment, forward the validated details to KeeperHub's Direct Execution API for guaranteed on-chain execution with retry logic and audit trail.
 
-The repository includes a comprehensive test suite demonstrating the vulnerabilities against 6 live simulated attack servers.
+## Live demo
 
-1. Start the malicious servers:
+The repository includes 7 deployed Vercel servers — 6 malicious, 1 honest. Each server targets a different vulnerability from the table above. The CLI runs an autonomous research agent across all 7 servers and produces a results table showing what was blocked and how much was saved.
+
+| Site | Vulnerability | URL |
+|---|---|---|
+| CryptoInsider | Price Inflation | cryptoinsider-nine.vercel.app |
+| ChainPulse | Prompt Injection | chainpulse-chi.vercel.app |
+| BlockBrief | Budget Drain | blockbrief-rho.vercel.app |
+| NodeTimes | Unknown Recipient | nodetimes.vercel.app |
+| Web3Daily | TLS Downgrade | web3daily-alpha.vercel.app |
+| ComboAttack | All vulnerabilities | combo-dusky.vercel.app |
+| ChainWatch | Honest server | chainwatch-tan.vercel.app |
+
+Run the CLI:
+
 ```bash
-npm install
-node demo/servers/cryptoinsider/server.js &
-node demo/servers/chainpulse/server.js &
-# (repeat for blockbrief, nodetimes, web3daily, combo)
+cd demo/cli
+pip install -r requirements.txt
+python run.py
 ```
 
-2. Run the unprotected agent to observe the attacks succeeding:
-```bash
-python demo/agent/unprotected_demo.py
-```
-
-3. Run the protected agent to observe DoorNo.402 blocking the attacks:
-```bash
-python demo/agent/multi_demo.py
-```
+The CLI prompts for a research topic and runs the agent autonomously across all 7 servers.
 
 ## Project structure
 
-* `sdk/python/` — Python middleware implementation
-* `sdk/ts/` — TypeScript middleware implementation
-* `demo/servers/` — 6 simulated attack servers (Express)
-* `demo/agent/` — Multi-server test scripts demonstrating the pipeline
-* `demo/landing/` — Project landing page source
+```
+sdk/python/       Python SDK
+sdk/ts/           TypeScript SDK
+demo/cli/         Interactive CLI with research agent
+demo/servers/     6 malicious + 1 honest Express servers
+demo/agent/       Standalone agent scripts
+demo/landing/     Landing page source
+skills/           Agent skill prompt for doorno402
+```
 
 ## License
 
