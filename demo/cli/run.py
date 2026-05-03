@@ -85,14 +85,13 @@ def get_balance() -> float:
 # ---------------------------------------------------------------------------
 
 HEADER_ART = r"""
-  ██████╗  ██████╗  ██████╗ ██████╗ ███╗   ██╗ ██████╗       ██╗  ██╗  ██████╗ ██████╗
-  ██╔══██╗██╔═══██╗██╔═══██╗██╔══██╗████╗  ██║██╔═══██╗      ██║  ██║ ██╔═══██╗╚════██╗
-  ██║  ██║██║   ██║██║   ██║██████╔╝██╔██╗ ██║██║   ██║      ███████║ ██║   ██║ █████╔╝
-  ██║  ██║██║   ██║██║   ██║██╔══██╗██║╚██╗██║██║   ██║ ██╗  ╚════██║ ██║   ██║██╔═══╝
-  ██████╔╝╚██████╔╝╚██████╔╝██║  ██║██║ ╚████║╚██████╔╝ ╚═╝       ██║ ╚██████╔╝███████╗
-  ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝           ╚═╝  ╚═════╝ ╚══════╝
+  ██████╗                           ███╗   ██╗            ██╗  ██╗ ██████╗ ██████╗ 
+  ██╔══██╗                          ████╗  ██║            ██║  ██║██╔═══██╗╚════██╗
+  ██║  ██║ ██████╗  ██████╗ ██████╗ ██╔██╗ ██║ ██████╗    ███████║██║   ██║ █████╔╝
+  ██║  ██║██╔═══██╗██╔═══██╗██╔══██╗██║╚██╗██║██╔═══██╗   ╚════██║██║   ██║██╔═══╝ 
+  ██████╔╝╚██████╔╝╚██████╔╝██║  ╚═╝██║ ╚████║╚██████╔╝██╗     ██║╚██████╔╝███████╗
+  ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝ ╚═════╝ ╚══════╝
 """.strip("\n")
-
 
 
 def _gradient_char(ch: str, col: int, total: int) -> str:
@@ -123,7 +122,9 @@ def print_header():
         console.print(colored, highlight=False)
     console.print()
     console.print("  [dim]The Security Layer Your Agent Needs[/]", justify="center")
+    console.print()
     console.print(Rule(style="dim"))
+
 
 
 def print_status():
@@ -149,10 +150,9 @@ def show_menu():
     console.print("  [cyan][1][/]  [bold]research[/]          [dim]run autonomous agent research[/]")
     console.print("  [cyan][2][/]  [bold]attack suite[/]      [dim]test all 7 servers + results table[/]")
     console.print("  [cyan][3][/]  [bold]single server[/]     [dim]pick one server to demo[/]")
-    console.print("  [cyan][4][/]  [bold]keeperhub[/]         [dim]validated payment execution demo[/]")
     console.print("  [cyan][q][/]  [bold]quit[/]")
     console.print()
-    return Prompt.ask("  >", choices=["1", "2", "3", "4", "q"], default="q",
+    return Prompt.ask("  >", choices=["1", "2", "3", "q"], default="q",
                       show_choices=False)
 
 
@@ -534,34 +534,6 @@ async def single_server():
     await client.aclose()
 
 
-# ---------------------------------------------------------------------------
-# option 4 — keeperhub demo
-# ---------------------------------------------------------------------------
-
-async def keeperhub_demo():
-    console.print("\n  [bold]keeperhub integration demo[/]")
-    console.print(Rule(style="dim"))
-    console.print("  [dim]flow: doorno.402 validates -> keeperhub executes[/]")
-    console.print()
-    console.print("  [cyan][1][/]  [bold]blocked demo[/]    [dim]malicious server, keeperhub never called[/]")
-    console.print("  [cyan][2][/]  [bold]approved demo[/]   [dim]honest server, keeperhub executes[/]")
-    console.print("  [cyan][b][/]  [dim]back[/]")
-    console.print()
-
-    choice = Prompt.ask("  >", choices=["1", "2", "b"],
-                        default="b", show_choices=False)
-    if choice == "b":
-        return
-
-    client = httpx.AsyncClient(timeout=15, follow_redirects=True)
-    if choice == "1":
-        srv = SERVERS[0]  # CryptoInsider (malicious)
-        await _visit_protected(client, url_of(srv), "demo", 1, 1, srv["name"])
-        console.print("\n  [dim]keeperhub was never called[/]")
-    elif choice == "2":
-        srv = SERVERS[6]  # ChainWatch (honest)
-        await _visit_protected(client, url_of(srv), "demo", 1, 1, srv["name"])
-    await client.aclose()
 
 
 # ---------------------------------------------------------------------------
@@ -581,8 +553,6 @@ async def main():
                 await attack_suite()
             elif choice == "3":
                 await single_server()
-            elif choice == "4":
-                await keeperhub_demo()
             elif choice == "q":
                 console.print("\n  [dim]shutting down...[/]")
                 break
