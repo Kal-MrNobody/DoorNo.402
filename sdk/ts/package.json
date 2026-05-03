@@ -1,20 +1,37 @@
 {
   "name": "doorno402",
   "version": "0.3.0",
+  "description": "Security middleware for x402 payments in AI agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
-    "demo:mcp": "ts-node ../../demo/agent/mcp_demo.ts"
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "x402",
+    "ai-agents",
+    "security",
+    "blockchain",
+    "payments",
+    "middleware"
+  ],
+  "author": "Kal-MrNobody",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kal-MrNobody/DoorNo.402"
+  },
+  "homepage": "https://github.com/Kal-MrNobody/DoorNo.402",
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
   },
   "dependencies": {
-    "dotenv": "^16.0.0",
     "node-fetch": "^3.3.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/node-fetch": "^2.6.11",
-    "typescript": "^5.0.0"
   }
 }
