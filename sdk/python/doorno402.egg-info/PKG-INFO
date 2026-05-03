@@ -1,3 +1,28 @@
+Metadata-Version: 2.4
+Name: doorno402
+Version: 0.4.0
+Summary: The security layer your agent needs — x402 payment middleware
+Home-page: https://github.com/Kal-MrNobody/DoorNo.402
+Author: Kal-MrNobody
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: httpx>=0.24.0
+Requires-Dist: web3>=6.0.0
+Requires-Dist: eth-account>=0.9.0
+Requires-Dist: colorama>=0.4.6
+Requires-Dist: python-dotenv>=1.0.0
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
 # DoorNo.402
 
 [![PyPI](https://img.shields.io/pypi/v/doorno402)](https://pypi.org/project/doorno402/)
@@ -84,7 +109,7 @@ await agent.run(safeClient);
 
 When DoorNo.402 approves a payment, forward the validated details to KeeperHub's Direct Execution API for guaranteed on-chain execution with retry logic and audit trail.
 
-## Test servers
+## Live demo
 
 The repository includes 7 deployed Vercel servers — 6 malicious, 1 honest. Each server targets a different vulnerability from the table above. The CLI runs an autonomous research agent across all 7 servers and produces a results table showing what was blocked and how much was saved.
 

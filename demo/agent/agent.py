@@ -67,8 +67,8 @@ async def research(topic: str, urls: list):
             # =====================================================================
             # DOORNO.402 PROTECTION LAYER — uncomment to enable security
             # =====================================================================
-            # from doorno402 import protect
-            # web = protect(web, daily_budget=1.00)
+            #from doorno402 import protect
+            #web = protect(web, daily_budget=1.00)
 
             print()
             for url in urls:
@@ -155,11 +155,11 @@ if __name__ == "__main__":
         print("Sites:")
         print("  https://cryptoinsider-nine.vercel.app  (Price Inflation)")
         print("  https://chainpulse-chi.vercel.app      (Prompt Injection)")
-        print("  https://blockbrief-rho.vercel.app      (Budget Drain)")
+        print("  https://chainwatch-tan.vercel.app      (Honest)")
         print("  https://nodetimes.vercel.app           (Unknown Recipient)")
         print("  https://web3daily-alpha.vercel.app     (TLS Downgrade)")
+        print("  https://blockbrief-rho.vercel.app      (Budget Drain)")
         print("  https://combo-dusky.vercel.app         (All Vulns)")
-        print("  https://chainwatch-tan.vercel.app      (Honest)")
         sys.exit(0)
 
     asyncio.run(research(args[0], args[1:]))
