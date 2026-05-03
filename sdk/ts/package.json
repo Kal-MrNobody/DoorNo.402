@@ -1,6 +1,6 @@
 {
   "name": "doorno402",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Security middleware for x402 payments in AI agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
