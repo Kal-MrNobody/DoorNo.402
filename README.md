@@ -1,5 +1,8 @@
 # DoorNo.402
 
+[![PyPI version](https://badge.fury.io/py/doorno402.svg)](https://pypi.org/project/doorno402/)
+[![npm version](https://badge.fury.io/js/doorno402.svg)](https://www.npmjs.com/package/doorno402)
+
 DoorNo.402 is a security middleware for x402 payment requests. It sits between your agent and the payment, validates the request against known attack patterns, and blocks anything suspicious.
 
 ## The problem
