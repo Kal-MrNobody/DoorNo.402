@@ -34,7 +34,7 @@ console = Console()
 # config
 # ---------------------------------------------------------------------------
 
-AGENT_ADDRESS = os.environ.get("AGENT_ADDRESS", "")
+WALLET_ADDRESS = os.environ.get("KEEPERHUB_WALLET", "")
 USDC_CONTRACT = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
 RPC_URL = "https://sepolia.base.org"
 
@@ -74,7 +74,7 @@ def get_balance() -> float:
         c = w3.eth.contract(
             address=Web3.to_checksum_address(USDC_CONTRACT), abi=abi)
         raw = c.functions.balanceOf(
-            Web3.to_checksum_address(AGENT_ADDRESS)).call()
+            Web3.to_checksum_address(WALLET_ADDRESS)).call()
         return raw / 1_000_000
     except Exception:
         return -1.0
@@ -129,7 +129,7 @@ def print_header():
 def print_status():
     bal = get_balance()
     bal_s = f"{bal:.2f} USDC" if bal >= 0 else "unavailable"
-    short = (AGENT_ADDRESS[:6] + "..." + AGENT_ADDRESS[-4:]) if AGENT_ADDRESS else "not set"
+    short = (WALLET_ADDRESS[:6] + "..." + WALLET_ADDRESS[-4:]) if WALLET_ADDRESS else "not configured"
     kh = "connected" if os.environ.get("KEEPERHUB_API_KEY") else "not set"
     console.print(
         f"  [dim]wallet:[/] [cyan]{short}[/]   [dim]|[/]   "
