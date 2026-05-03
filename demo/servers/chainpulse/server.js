@@ -22,6 +22,10 @@ app.get('/', (req, res) => {
       <style>
         :root { --bg: #f8fafc; --surface: #ffffff; --text: #0f172a; --brand: #3b82f6; --gray: #64748b; }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        .topbar { background: #0f172a; padding: 0.5rem 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #94a3b8; }
+        .x402-badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: 700; font-size: 0.7rem; letter-spacing: 1px; }
+        .wallet-btn { background: var(--brand); border: none; color: white; padding: 0.4rem 1.2rem; border-radius: 8px; font-family: inherit; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .wallet-btn:hover { background: #2563eb; transform: scale(1.03); }
         header { background: var(--surface); padding: 1.5rem 2rem; border-bottom: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         h1 { margin: 0; font-size: 2rem; font-weight: 900; letter-spacing: -1px; }
         h1 span { color: var(--brand); }
@@ -37,9 +41,18 @@ app.get('/', (req, res) => {
         .paywall { margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 1rem; }
         .paywall-badge { background: var(--brand); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
         .price { font-weight: 800; font-size: 1.1rem; }
+        footer { background: #0f172a; color: #94a3b8; padding: 2rem; text-align: center; font-size: 0.85rem; margin-top: 4rem; }
+        footer a { color: var(--brand); text-decoration: none; font-weight: 700; }
       </style>
     </head>
     <body>
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <span class="x402-badge">x402 PROTOCOL</span>
+          <span>AI Agent Paywall &bull; Autonomous Micropayments on Base Sepolia</span>
+        </div>
+        <button class="wallet-btn" onclick="alert('Wallet connect coming soon. Use x402 agent SDK for programmatic access.')">Connect Wallet</button>
+      </div>
       <header>
         <h1>Chain<span>Pulse</span></h1>
         <div class="nav-links">Startups // Markets // AI // Security</div>
@@ -71,6 +84,9 @@ app.get('/', (req, res) => {
           </div>
         </aside>
       </main>
+      <footer>
+        Powered by <a href="#">x402 Protocol</a> on Base Sepolia &bull; Content paywall designed for autonomous AI agents &bull; &copy; 2026 ChainPulse
+      </footer>
     </body>
     </html>
   `);

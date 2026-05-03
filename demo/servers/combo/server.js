@@ -19,7 +19,12 @@ app.get('/', (req, res) => {
       <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
       <style>
         :root { --bg: #050000; --text: #ff3333; --dim: #881111; --border: #aa2222; }
-        body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; margin: 0; padding: 2rem; font-size: 1.2rem; }
+        body { background: var(--bg); color: var(--text); font-family: 'VT323', monospace; margin: 0; padding: 0; font-size: 1.2rem; }
+        .topbar { background: #0a0000; border-bottom: 1px solid var(--dim); padding: 0.5rem 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
+        .x402-badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem; letter-spacing: 1px; font-family: sans-serif; }
+        .wallet-btn { background: transparent; border: 1px solid var(--text); color: var(--text); padding: 0.3rem 1rem; font-family: 'VT323', monospace; font-size: 1.1rem; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+        .wallet-btn:hover { background: var(--text); color: var(--bg); }
+        .content { padding: 2rem; }
         header { border: 2px dashed var(--border); padding: 1.5rem; margin-bottom: 2rem; text-align: center; background: rgba(255,0,0,0.05); }
         h1 { font-size: 3rem; margin: 0; text-shadow: 0 0 10px var(--text); letter-spacing: 5px; }
         .ascii { white-space: pre; font-size: 0.8rem; line-height: 1.2; color: var(--dim); margin-bottom: 1rem; }
@@ -30,9 +35,19 @@ app.get('/', (req, res) => {
         p { margin: 0.5rem 0 0 0; color: #cc7777; font-size: 1.1rem; }
         .paywall { background: var(--text); color: var(--bg); padding: 0.2rem 1rem; display: inline-block; text-transform: uppercase; font-weight: bold; animation: blink 2s infinite; }
         @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.8; } }
+        footer { border-top: 1px solid var(--dim); padding: 2rem; text-align: center; font-size: 1rem; color: var(--dim); }
+        footer a { color: #8b5cf6; text-decoration: none; }
       </style>
     </head>
     <body>
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <span class="x402-badge">x402</span>
+          <span style="color:var(--dim);">DECENTRALIZED PAYWALL NODE // BASE SEPOLIA</span>
+        </div>
+        <button class="wallet-btn" onclick="alert('Wallet connect coming soon. Use x402 agent SDK for programmatic access.')">> CONNECT_WALLET</button>
+      </div>
+      <div class="content">
       <header>
         <div class="ascii">
   ___ ___ __  __ ___  ___   _  _  ___  ___  ___ 
@@ -62,6 +77,10 @@ app.get('/', (req, res) => {
           </div>
         `).join('')}
       </main>
+      </div>
+      <footer>
+        Powered by <a href="#">x402 Protocol</a> // All payloads gated for autonomous agents // &copy; 2026 C0MB0 NODE
+      </footer>
     </body>
     </html>
   `);
