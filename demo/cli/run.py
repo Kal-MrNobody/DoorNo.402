@@ -411,7 +411,7 @@ def _print_summary_table(results: list, mode: str):
             amt = f"${r.get('amount',0):.2f}" if r.get("paid") else "skipped"
             tx = (r.get("tx","")[:10] + "..." + r.get("tx","")[-8:]) if r.get("tx") else "-"
             vuln = next((s["vuln"] for s in SERVERS
-                        if r["domain"] in url_of(s)), "")
+                        if r["domain"] == s["name"]), "")
             table.add_row(r["domain"], vuln, amt, tx)
             if r.get("paid"):
                 total_spent += r.get("amount", 0)
@@ -431,7 +431,7 @@ def _print_summary_table(results: list, mode: str):
                 table.add_row(r["domain"], "", "error", "")
                 continue
             vuln = next((s["vuln"] for s in SERVERS
-                        if r["domain"] in url_of(s)), "")
+                        if r["domain"] == s["name"]), "")
             if r.get("blocked"):
                 table.add_row(r["domain"], vuln,
                               "[red bold]BLOCKED[/]",
