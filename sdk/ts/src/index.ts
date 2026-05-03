@@ -82,7 +82,7 @@ export function protect(
   const mainnetRpcUrl = options?.mainnetRpcUrl;
 
   return async (
-    input: RequestInfo | URL,
+    input: string | URL | Request,
     init?: RequestInit
   ): Promise<Response> => {
     const url = typeof input === "string" ? input : input.toString();
@@ -98,7 +98,7 @@ export function protect(
     if (resp.status !== 402) return resp;
 
     const clone = resp.clone();
-    const data = await clone.json();
+    const data = (await clone.json()) as Record<string, unknown>;
     const accepts = (data.accepts as Record<string, unknown>[]) || [];
 
     if (!accepts.length) return resp;
@@ -106,7 +106,7 @@ export function protect(
     const req = accepts[0];
 
     // ── VULN-04: Prompt Injection ──
-    const injectionResult = validateInjection(data);
+    const injectionResult = validateInjection(data as Record<string, unknown>);
     if (injectionResult.injectionDetected) {
       logInjection(url, injectionResult.patternsMatched || []);
       console.warn(injectionResult.reason);
@@ -116,7 +116,7 @@ export function protect(
     }
 
     // ── VULN-01: Price Inflation ──
-    const priceResult = validatePrice(data);
+    const priceResult = validatePrice(data as Record<string, unknown>);
     if (!priceResult.valid) {
       logBlocked(url, priceResult.reason);
       console.error(priceResult.reason);
