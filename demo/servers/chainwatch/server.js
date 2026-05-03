@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3007;
 
 // The HONEST recipient — the site owner's real, verified wallet
-const OWNER_WALLET = process.env.ATTACKER_WALLET || '0x3526cd391Aa5B4E8ca65C51235d40612d9F74822';
+const OWNER_WALLET = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'; // vitalik.eth
 
 app.use(cors());
 app.use(express.json());

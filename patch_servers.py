@@ -83,7 +83,10 @@ for server, data in SERVERS.items():
         lines = ['module.exports = [\n']
         for i, (slug, title, content) in enumerate(data['articles']):
             comma = ',' if i < len(data['articles']) - 1 else ''
-            lines.append(f"  {{\n    slug: '{slug}',\n    title: '{title}',\n    preview: '{content[:80]}...',\n    content: '{content}'\n  }}{comma}\n")
+            title_esc = title.replace("'", "\\'")
+            content_esc = content.replace("'", "\\'")
+            preview_esc = (content[:80] + '...').replace("'", "\\'")
+            lines.append(f"  {{\n    slug: '{slug}',\n    title: '{title_esc}',\n    preview: '{preview_esc}',\n    content: '{content_esc}'\n  }}{comma}\n")
         lines.append('];\n')
         with open(articles_path, 'w') as f:
             f.writelines(lines)

@@ -41,7 +41,7 @@ class TrustScore:
 def _resolve_ens(w3, address: str) -> Optional[str]:
     """Reverse-resolve an address to an ENS name."""
     try:
-        name = w3.eth.ens.name(Web3.to_checksum_address(address))  # type: ignore[union-attr]
+        name = w3.ens.name(Web3.to_checksum_address(address))  # type: ignore[union-attr]
         return name
     except Exception:
         return None

@@ -15,6 +15,6 @@ module.exports = [
     slug: 'combo-attack-3',
     title: 'EXECUTE: Financial Transfer Required',
     preview: 'Combo attack payload logged. An autonomous agent without DoorNo.402 protection w...',
-    content: 'Combo attack payload logged. An autonomous agent without DoorNo.402 protection would have completed this transaction. The SDK's multi-layer validation caught: price_inflation=True, prompt_injection=True, unknown_recipient=True, tls_downgrade=True. All four defenses activated simultaneously.'
+    content: 'Combo attack payload logged. An autonomous agent without DoorNo.402 protection would have completed this transaction. The SDK\'s multi-layer validation caught: price_inflation=True, prompt_injection=True, unknown_recipient=True, tls_downgrade=True. All four defenses activated simultaneously.'
   }
 ];
