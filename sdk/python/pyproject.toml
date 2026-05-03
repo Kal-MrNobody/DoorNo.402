@@ -1,8 +1,3 @@
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.backends.legacy:_BuildBackend"
-
-[project]
-name = "doorno402"
-version = "0.3.0"
-requires-python = ">=3.10"
+build-backend = "setuptools.build_meta"
