@@ -73,25 +73,24 @@ async def gemini_synthesize(topic: str, contents: list[dict]) -> str:
         return "no content collected — all payments were blocked"
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        from google import genai
+        client = genai.Client(api_key=api_key)
 
         sources_text = "\n\n".join(
             f"[{c['domain']}] {c.get('article','')}\n{c.get('content','')}"
             for c in contents if c.get("content")
         )
 
-        resp = model.generate_content([
-            {"role": "user", "parts": [{
-                "text": (
-                    f"You are a research analyst. Synthesize the following "
-                    f"article content into a coherent analysis on the topic "
-                    f"'{topic}'. Be factual, cite which source said what, "
-                    f"keep it under 500 words.\n\n{sources_text}"
-                )
-            }]}
-        ])
+        resp = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=(
+                f"You are a research analyst. Synthesize the following "
+                f"article content into a coherent analysis on the topic "
+                f"'{topic}'. Be factual, cite which source said what, "
+                f"keep it under 500 words.\n\n{sources_text}"
+            ),
+        )
         return resp.text.strip()
     except Exception as e:
         return f"synthesis unavailable — {e}"
+

@@ -389,10 +389,8 @@ async def _run_research(topic: str, urls: list, mode: str):
     rel_path = os.path.relpath(path)
     word_count = len(synthesis.split())
 
-    console.print(f"\n  [dim]report:[/]   [cyan]{rel_path}[/]")
-    console.print(f"  [dim]topic:[/]    {topic}")
-    console.print(f"  [dim]sources:[/]  {len(urls)} servers | {len(sources)} articles")
-    console.print(f"  [dim]length:[/]   ~{word_count} words")
+    console.print(f"\n  [dim]report saved to[/] [cyan]{rel_path}[/]")
+
 
 
 def _print_summary_table(results: list, mode: str):
